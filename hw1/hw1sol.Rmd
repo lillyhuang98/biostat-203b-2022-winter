@@ -56,14 +56,19 @@ Content of folder `hosp` is
 ls -l /mnt/mimiciv/1.0/hosp
 ```
 
+
 Content of folder `icu` is
 
 ```{bash}
 ls -l /mnt/mimiciv/1.0/icu
 ```
+The reason that the files were named as `.csv.gz` instead of `.csv` is because the files were compressed.
 
 ---
 3. Briefly describe what bash commands `zcat`, `zless`, `zmore`, and `zgrep` do.
+`zcat` is for uncompress the data
+`zless` is for 
+
 
 4. What's the output of following bash script?    
 ```{bash, eval=F}
@@ -71,7 +76,7 @@ ls -l /mnt/mimiciv/1.0/icu
       do
         ls -l $datafile
       done
-    ```
+```
 Display the number of lines in each data file using a similar loop.
 
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
