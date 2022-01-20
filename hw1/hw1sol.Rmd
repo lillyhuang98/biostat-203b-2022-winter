@@ -35,7 +35,6 @@ This exercise (and later in this course) uses the [MIMIC-IV data](https://mimic-
 **Solution:** verification link:
 https://www.citiprogram.org/verify/?ke7fb7cca-b5f2-4be2-a84b-687c2fe48c86-46748792
 
-
 ## Q3. Linux Shell Commands
 
 1. The `/mnt/mimiciv/1.0` folder on teaching server contains data sets from MIMIC-IV. Refer to the documentation <https://mimic.mit.edu/docs/iv/> for details of data files.  
@@ -81,13 +80,17 @@ The reason that the files were named as `.csv.gz` instead of `.csv` is because t
         ls -l $datafile
       done
 ```
-  
-```{bash, eval=F}
-ls -l $
-```
+**solution:** The above output list all .gz files in the core.
 
 Display the number of lines in each data file using a similar loop.
 
+**solution:**
+```{bash, eval=F}
+    for datafile in /mnt/mimiciv/1.0/core/*.gz
+      do
+        zcat $datafile | wc -l
+      done
+```
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
 
 6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on.)
@@ -99,6 +102,10 @@ Display the number of lines in each data file using a similar loop.
     wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
     ```
 Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.
+
+**Solution:** `wget -nc` download the file from the webpage.
+
+
     ```{bash, eval=FALSE}
     wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
     for char in Elizabeth Jane Lydia Darcy
@@ -110,12 +117,16 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
 
 2. What's the difference between the following two commands?
     ```{bash eval=FALSE}
-    echo 'hello, world' > test1.txt
+    echo 'hello, world'
     ```
     and
     ```{bash eval=FALSE}
-    echo 'hello, world' >> test2.txt
+    echo 'hello, world'
     ```
+
+
+**Solution** The difference is 
+
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
     ```{bash eval=FALSE}
