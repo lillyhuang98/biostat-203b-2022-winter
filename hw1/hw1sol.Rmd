@@ -91,6 +91,7 @@ Display the number of lines in each data file using a similar loop.
         zcat $datafile | wc -l
       done
 ```
+
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
 
 ```{bash, eval=F}
@@ -139,15 +140,15 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
 
 2. What's the difference between the following two commands?
     ```{bash eval=FALSE}
-    echo 'hello, world'
+    echo 'hello, world' > test1.txt
     ```
     and
     ```{bash eval=FALSE}
-    echo 'hello, world'
+    echo 'hello, world' >> test2.txt
     ```
 
 
-**Solution** The difference is 
+**Solution** The first command create the file `test 1.txt` with adding in `hello, world` text in, the second command create the file `test 2.txt` with adding in `hello, world` ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command.
 
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
