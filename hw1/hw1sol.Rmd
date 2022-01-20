@@ -32,6 +32,10 @@ sessionInfo()
 
 This exercise (and later in this course) uses the [MIMIC-IV data](https://mimic-iv.mit.edu), a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <https://mimic.mit.edu/docs/gettingstarted/> to (1) complete the CITI `Data or Specimens Only Research` course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. (Hint: The CITI training takes a couple hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)
 
+**Solution:** verification link:
+https://www.citiprogram.org/verify/?ke7fb7cca-b5f2-4be2-a84b-687c2fe48c86-46748792
+
+
 ## Q3. Linux Shell Commands
 
 1. The `/mnt/mimiciv/1.0` folder on teaching server contains data sets from MIMIC-IV. Refer to the documentation <https://mimic.mit.edu/docs/iv/> for details of data files.  
@@ -77,6 +81,11 @@ The reason that the files were named as `.csv.gz` instead of `.csv` is because t
         ls -l $datafile
       done
 ```
+  
+```{bash, eval=F}
+ls -l $
+```
+
 Display the number of lines in each data file using a similar loop.
 
 5. Display the first few lines of `admissions.csv.gz`. How many rows are in this data file? How many unique patients (identified by `subject_id`) are in this data file? (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `sort`, `uniq`, `wc`, and so on.)
