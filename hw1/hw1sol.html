@@ -296,7 +296,28 @@ pre code {
   do
      zcat $datafile | awk -F, &#39;{ print $1 }&#39; | tail -523740 | uniq | wc -l
   done</code></pre></li>
-<li><p>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq -c</code>, <code>wc</code>, and so on.)</p></li>
+<li><p>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq -c</code>, <code>wc</code>, and so on.)</p>
+<p><strong>Solution:</strong> The value for <code>admission_type</code> is $6, for <code>admission_location</code> is $7, for <code>insurance</code> is $9, for <code>ethnicity</code> is $12.</p>
+<p>The count for unique value of <code>admission_type</code></p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+     zcat $datafile | awk -F, &#39;{ print $6 }&#39; | tail -523740 | uniq -c | wc -l
+  done</code></pre>
+<p>The count for unique value of <code>admission_location</code></p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+     zcat $datafile | awk -F, &#39;{ print $7 }&#39; | tail -523740 | uniq -c | wc -l
+  done</code></pre>
+<p>The count for unique value of <code>insurance</code></p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+     zcat $datafile | awk -F, &#39;{ print $9 }&#39; | tail -523740 | uniq -c | wc -l
+  done</code></pre>
+<p>The count for unique value of <code>ethnicity</code></p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+     zcat $datafile | awk -F, &#39;{ print $12 }&#39; | tail -523740 | uniq -c | wc -l
+  done</code></pre></li>
 </ol>
 </div>
 <div id="q4.-whos-popular-in-price-and-prejudice" class="section level2">
@@ -318,22 +339,43 @@ pre code {
 <p>and</p>
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre>
 <p><strong>Solution:</strong></p>
-<p>The first command create the file <code>test 1.txt</code> with adding in <code>hello, world</code> text in, the second command create the file <code>test 2.txt</code> with adding in <code>hello, world</code> ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command.</p></li>
+<p>The first command create the file <code>test 1.txt</code> with adding in <code>hello, world</code> text in, the second command create the file <code>test 2.txt</code> with adding in <code>hello, world</code> ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command which means append the comand text to the file.</p></li>
 <li><p>Using your favorite text editor (e.g., <code>vi</code>), type the following and save the file as <code>middle.sh</code>:</p>
 <pre class="bash"><code>;#!/bin/sh
 # Select lines from the middle of a file.
 # Usage: bash middle.sh filename end_line num_lines
-head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre>
-<p>Using <code>chmod</code> make the file executable by the owner, and run</p>
-<pre class="bash"><code>chmod g+x middle.sh
-chmod 751 middle.sh
-./middle.sh pg42671.txt 20 5</code></pre>
-<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p></li>
+head -n &quot;$2&quot; &quot;$1&quot; | tail -n &quot;$3&quot;</code></pre></li>
 </ol>
+<p>Using <code>chmod</code> make the file executable by the owner, and run</p>
+<pre><code>```bash
+chmod g+x middle.sh
+chmod 751 middle.sh
+./middle.sh pg42671.txt 20 5
+```</code></pre>
+<p>Explain the output. Explain the meaning of <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and <code>&quot;$3&quot;</code> in this shell script. Why do we need the first line of the shell script?</p>
+<pre><code>**solution:**
+The output is using the editor to type the command in the text and save it as a file `middle.sh`. Then the second      command is to make the file executable by the owner by setting the permission and displays `pg42671` file with end     lines of 20 and number lines of 5
+`&quot;$1&quot;` means `filename` variables, `&quot;$2&quot;` means `endl_line` variables , and `&quot;$3&quot;`means `num_lines` variables.
+The first line of the shell script `#!/bin/sh` is needed because it tells the systems to operature the script by       using `bin/sh` as the interpreter.</code></pre>
 <div id="q5.-more-fun-with-linux" class="section level3">
 <h3>Q5. More fun with Linux</h3>
 <p>Try following commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>
-<p><strong>Solution:</strong></p>
+<pre><code> **Solution:**
+ `cal` is for the current month calender
+ `cal 2021` is for the calender in 2021
+ `cal 9 1752` is for calender in september in 1752, some days are missing in the calender
+ `date` is for the date of today with time zone
+ `hostname` is for the name of the server
+ `arch` is for the computer&#39;s system
+ `uname -a` is for the current using computer&#39;s system, name, and information.
+ `who am i` is for the username of user
+ `who`is for displaying who logged in the server
+ `w` is for displaying the information who logged in the server and what they are doing.
+ `id` is for displaying uid and gid and groups
+ `last | head` is for listing the information of first 10 users who logged in to the server
+ `echo {con,pre}{sent,fer}{s,ed}` is for listing all the possibilites of combination of each components in {}
+ `time sleep 5` if for pause command for 5 seconds
+ `history | tail` is for listing the 10 last used commands</code></pre>
 </div>
 </div>
 

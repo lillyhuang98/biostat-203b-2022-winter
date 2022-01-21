@@ -131,7 +131,47 @@ The reason that the files were named as `.csv.gz` instead of `.csv` is because t
 
 6. What are the possible values taken by each of the variable `admission_type`, `admission_location`, `insurance`, and `ethnicity`? Also report the count for each unique value of these variables. (Hint: combine Linux commands `zcat`, `head`/`tail`, `awk`, `uniq -c`, `wc`, and so on.)
 
+    **Solution:** 
+    The value for `admission_type` is $6, for `admission_location` is $7, for `insurance` is $9, for `ethnicity` is $12.
+    
+    
+    The count for unique value of `admission_type`
+    
+    ```{bash eval=F}
+    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+      do
+         zcat $datafile | awk -F, '{ print $6 }' | tail -523740 | uniq -c | wc -l
+      done
+    ```
+   
+    The count for unique value of `admission_location`
+    
+    ```{bash eval=F}
+    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+      do
+         zcat $datafile | awk -F, '{ print $7 }' | tail -523740 | uniq -c | wc -l
+      done
+    ```
+    
+    The count for unique value of `insurance`
 
+    ```{bash eval=F}
+    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+      do
+         zcat $datafile | awk -F, '{ print $9 }' | tail -523740 | uniq -c | wc -l
+      done
+    ```
+    
+    The count for unique value of `ethnicity`
+
+    ```{bash eval=F}
+    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+      do
+         zcat $datafile | awk -F, '{ print $12 }' | tail -523740 | uniq -c | wc -l
+      done
+    ```
+    
+    
 ## Q4. Who's popular in Price and Prejudice
 
 1. You and your friend just have finished reading *Pride and Prejudice* by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <http://www.gutenberg.org/cache/epub/42671/pg42671.txt> and save to your local folder. 
@@ -166,7 +206,7 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
 
     **Solution:** 
     
-    The first command create the file `test 1.txt` with adding in `hello, world` text in, the second command create the file `test 2.txt` with adding in `hello, world` ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command.
+    The first command create the file `test 1.txt` with adding in `hello, world` text in, the second command create the file `test 2.txt` with adding in `hello, world` ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command which means append the comand text to the file.
 
 
 3. Using your favorite text editor (e.g., `vi`), type the following and save the file as `middle.sh`:
@@ -176,6 +216,7 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
     # Usage: bash middle.sh filename end_line num_lines
     head -n "$2" "$1" | tail -n "$3"
     ```
+
 Using `chmod` make the file executable by the owner, and run 
 
     ```{bash eval=FALSE}
@@ -185,8 +226,31 @@ Using `chmod` make the file executable by the owner, and run
     ```
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 
+    **solution:**
+    The output is using the editor to type the command in the text and save it as a file `middle.sh`. Then the second      command is to make the file executable by the owner by setting the permission and displays `pg42671` file with end     lines of 20 and number lines of 5
+    `"$1"` means `filename` variables, `"$2"` means `endl_line` variables , and `"$3"`means `num_lines` variables.
+    The first line of the shell script `#!/bin/sh` is needed because it tells the systems to operature the script by       using `bin/sh` as the interpreter.
+
 ### Q5. More fun with Linux
 
 Try following commands in Bash and interpret the results: `cal`, `cal 2021`, `cal 9 1752` (anything unusual?), `date`, `hostname`, `arch`, `uname -a`, `uptime`, `who am i`, `who`, `w`, `id`, `last | head`, `echo {con,pre}{sent,fer}{s,ed}`, `time sleep 5`, `history | tail`.
 
-**Solution:**
+     **Solution:**
+     `cal` is for the current month calender
+     `cal 2021` is for the calender in 2021
+     `cal 9 1752` is for calender in september in 1752, some days are missing in the calender
+     `date` is for the date of today with time zone
+     `hostname` is for the name of the server
+     `arch` is for the computer's system
+     `uname -a` is for the current using computer's system, name, and information.
+     `who am i` is for the username of user
+     `who`is for displaying who logged in the server
+     `w` is for displaying the information who logged in the server and what they are doing.
+     `id` is for displaying uid and gid and groups
+     `last | head` is for listing the information of first 10 users who logged in to the server
+     `echo {con,pre}{sent,fer}{s,ed}` is for listing all the possibilites of combination of each components in {}
+     `time sleep 5` if for pause command for 5 seconds
+     `history | tail` is for listing the 10 last used commands
+    
+    
+    
