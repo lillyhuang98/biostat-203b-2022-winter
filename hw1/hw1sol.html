@@ -217,19 +217,14 @@ pre code {
 <h2>Q3. Linux Shell Commands</h2>
 <ol style="list-style-type: decimal">
 <li><p>The <code>/mnt/mimiciv/1.0</code> folder on teaching server contains data sets from MIMIC-IV. Refer to the documentation <a href="https://mimic.mit.edu/docs/iv/" class="uri">https://mimic.mit.edu/docs/iv/</a> for details of data files.</p>
-<pre class="bash"><code>ls -l /mnt/mimiciv/1.0</code></pre>
-<pre><code>## total 24
-## drwxr-xr-x. 2 root root 4096 Jan  4 21:48 core
-## drwxr-xr-x. 2 root root 4096 Jan  4 21:51 hosp
-## drwxr-xr-x. 2 root root 4096 Jan  4 21:52 icu
-## -rw-r--r--. 1 root root  797 Jan  4 21:48 index.html
-## -rw-r--r--. 1 root root 2518 Jan  4 21:54 LICENSE.txt
-## -rw-r--r--. 1 root root 2459 Jan  4 21:48 SHA256SUMS.txt</code></pre>
-<p>Please, do <strong>not</strong> put these data files into Git; they are big. Do <strong>not</strong> copy them into your directory. Do <strong>not</strong> decompress the gz data files. These create unnecessary big files on storage and are not big data friendly practices. Just read from the data folder <code>/mnt/mimiciv/1.0</code> directly in following exercises.</p>
-<p>Use Bash commands to answer following questions.</p></li>
-<li><p>Display the contents in the folders <code>core</code>, <code>hosp</code>, <code>icu</code>. Why are these data files distributed as <code>.csv.gz</code> files instead of <code>.csv</code> (comma separated values) files? Read the page <a href="https://mimic.mit.edu/docs/iv/" class="uri">https://mimic.mit.edu/docs/iv/</a> to understand what’s in each folder.</p></li>
+<pre class="bash"><code>ls -l /mnt/mimiciv/1.0</code></pre></li>
 </ol>
-<p><strong>Solution:</strong> Content of folder <code>core</code> is</p>
+<p>Please, do <strong>not</strong> put these data files into Git; they are big. Do <strong>not</strong> copy them into your directory. Do <strong>not</strong> decompress the gz data files. These create unnecessary big files on storage and are not big data friendly practices. Just read from the data folder <code>/mnt/mimiciv/1.0</code> directly in following exercises.</p>
+<pre><code>Use Bash commands to answer following questions.</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li><p>Display the contents in the folders <code>core</code>, <code>hosp</code>, <code>icu</code>. Why are these data files distributed as <code>.csv.gz</code> files instead of <code>.csv</code> (comma separated values) files? Read the page <a href="https://mimic.mit.edu/docs/iv/" class="uri">https://mimic.mit.edu/docs/iv/</a> to understand what’s in each folder.</p>
+<p><strong>Solution:</strong></p>
+<p>Content of folder <code>core</code> is</p>
 <pre class="bash"><code>ls -l /mnt/mimiciv/1.0/core</code></pre>
 <pre><code>## total 71472
 ## -rw-r--r--. 1 root root 17208966 Jan  4 21:48 admissions.csv.gz
@@ -268,40 +263,40 @@ pre code {
 ## -rw-r--r--. 1 root root  352443512 Jan  4 21:52 inputevents.csv.gz
 ## -rw-r--r--. 1 root root   37095672 Jan  4 21:52 outputevents.csv.gz
 ## -rw-r--r--. 1 root root   20567368 Jan  4 21:52 procedureevents.csv.gz</code></pre>
-<p>The reason that the files were named as <code>.csv.gz</code> instead of <code>.csv</code> is because the files were compressed.</p>
+<p>The reason that the files were named as <code>.csv.gz</code> instead of <code>.csv</code> is because the files were compressed.</p></li>
+</ol>
 <hr />
 <ol start="3" style="list-style-type: decimal">
-<li><p>Briefly describe what bash commands <code>zcat</code>, <code>zless</code>, <code>zmore</code>, and <code>zgrep</code> do. <strong>Solution:</strong> <code>zcat</code> is for uncompress the data,<code>zless</code> is for <code>zmore</code> is for</p></li>
-<li><p>What’s the output of following bash script?</p></li>
-</ol>
-<pre class="bash"><code>    for datafile in /mnt/mimiciv/1.0/core/*.gz
-      do
-        ls -l $datafile
-      done</code></pre>
-<p><strong>solution:</strong> The above output list all .gz files in the core.</p>
+<li><p>Briefly describe what bash commands <code>zcat</code>, <code>zless</code>, <code>zmore</code>, and <code>zgrep</code> do.</p>
+<p><strong>Solution:</strong> <code>zcat</code> is for uncompress the data,<code>zmore</code> is for browsing for a compressed file for one screen at a time, <code>zless</code> is a pager for compressed files, <code>zgrep</code> is for searching something in compressed files.</p></li>
+<li><p>What’s the output of following bash script?</p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/*.gz
+  do
+    ls -l $datafile
+  done</code></pre>
+<p><strong>solution:</strong></p>
+<p>The above output list all .gz files in the core.</p>
 <p>Display the number of lines in each data file using a similar loop.</p>
 <p><strong>solution:</strong></p>
-<pre class="bash"><code>    for datafile in /mnt/mimiciv/1.0/core/*.gz
-      do
-        zcat $datafile | wc -l
-      done</code></pre>
-<ol start="5" style="list-style-type: decimal">
-<li>Display the first few lines of <code>admissions.csv.gz</code>. How many rows are in this data file? How many unique patients (identified by <code>subject_id</code>) are in this data file? (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>sort</code>, <code>uniq</code>, <code>wc</code>, and so on.)</li>
-</ol>
-<pre class="bash"><code>    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
-      do
-        zcat $datafile | head -10
-      done</code></pre>
-<pre class="bash"><code>    for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
-      do
-        zcat $datafile | wc -l
-      done</code></pre>
-<pre class="bash"><code>   for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
-    do
-      zcat $datafile | cat $subject_id | wc -l
-    done</code></pre>
-<ol start="6" style="list-style-type: decimal">
-<li>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq -c</code>, <code>wc</code>, and so on.)</li>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/*.gz
+  do
+    zcat $datafile | wc -l
+  done</code></pre></li>
+<li><p>Display the first few lines of <code>admissions.csv.gz</code>. How many rows are in this data file? How many unique patients (identified by <code>subject_id</code>) are in this data file? (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>sort</code>, <code>uniq</code>, <code>wc</code>, and so on.)</p>
+<p><strong>solution:</strong></p>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+    zcat $datafile | head -10
+  done</code></pre>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+    zcat $datafile | wc -l
+  done</code></pre>
+<pre class="bash"><code>for datafile in /mnt/mimiciv/1.0/core/admissions.csv.gz
+  do
+     zcat $datafile | awk -F, &#39;{ print $1 }&#39; | tail -523740 | uniq | wc -l
+  done</code></pre></li>
+<li><p>What are the possible values taken by each of the variable <code>admission_type</code>, <code>admission_location</code>, <code>insurance</code>, and <code>ethnicity</code>? Also report the count for each unique value of these variables. (Hint: combine Linux commands <code>zcat</code>, <code>head</code>/<code>tail</code>, <code>awk</code>, <code>uniq -c</code>, <code>wc</code>, and so on.)</p></li>
 </ol>
 </div>
 <div id="q4.-whos-popular-in-price-and-prejudice" class="section level2">
@@ -309,23 +304,21 @@ pre code {
 <ol style="list-style-type: decimal">
 <li><p>You and your friend just have finished reading <em>Pride and Prejudice</em> by Jane Austen. Among the four main characters in the book, Elizabeth, Jane, Lydia, and Darcy, your friend thinks that Darcy was the most mentioned. You, however, are certain it was Elizabeth. Obtain the full text of the novel from <a href="http://www.gutenberg.org/cache/epub/42671/pg42671.txt" class="uri">http://www.gutenberg.org/cache/epub/42671/pg42671.txt</a> and save to your local folder.</p>
 <pre class="bash"><code>wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt</code></pre>
-<p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p></li>
-</ol>
-<p><strong>Solution:</strong> <code>wget -nc</code> download the file from the webpage.</p>
-<pre><code>```bash
-for char in Elizabeth Jane Lydia Darcy
-do
-  echo $char:
-done
-```</code></pre>
-<ol start="2" style="list-style-type: decimal">
+<p>Explain what <code>wget -nc</code> does. Do <strong>not</strong> put this text file <code>pg42671.txt</code> in Git. Complete the following loop to tabulate the number of times each of the four characters is mentioned using Linux commands.</p>
+<p><strong>Solution:</strong></p>
+<p><code>wget -nc</code> download the file from the webpage.</p>
+<pre class="bash"><code>wget -nc http://www.gutenberg.org/cache/epub/42671/pg42671.txt
+  for char in Elizabeth Jane Lydia Darcy
+    do
+      echo $char:
+      ls | grep $char pg42671.txt | wc -l
+    done</code></pre></li>
 <li><p>What’s the difference between the following two commands?</p>
 <pre class="bash"><code>echo &#39;hello, world&#39; &gt; test1.txt</code></pre>
 <p>and</p>
-<pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre></li>
-</ol>
-<p><strong>Solution</strong> The first command create the file <code>test 1.txt</code> with adding in <code>hello, world</code> text in, the second command create the file <code>test 2.txt</code> with adding in <code>hello, world</code> ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command.</p>
-<ol start="3" style="list-style-type: decimal">
+<pre class="bash"><code>echo &#39;hello, world&#39; &gt;&gt; test2.txt</code></pre>
+<p><strong>Solution:</strong></p>
+<p>The first command create the file <code>test 1.txt</code> with adding in <code>hello, world</code> text in, the second command create the file <code>test 2.txt</code> with adding in <code>hello, world</code> ,but when run multiple times the second command, there will be multiple times adding of the text to the file depends on the times of running command.</p></li>
 <li><p>Using your favorite text editor (e.g., <code>vi</code>), type the following and save the file as <code>middle.sh</code>:</p>
 <pre class="bash"><code>;#!/bin/sh
 # Select lines from the middle of a file.
@@ -340,6 +333,7 @@ chmod 751 middle.sh
 <div id="q5.-more-fun-with-linux" class="section level3">
 <h3>Q5. More fun with Linux</h3>
 <p>Try following commands in Bash and interpret the results: <code>cal</code>, <code>cal 2021</code>, <code>cal 9 1752</code> (anything unusual?), <code>date</code>, <code>hostname</code>, <code>arch</code>, <code>uname -a</code>, <code>uptime</code>, <code>who am i</code>, <code>who</code>, <code>w</code>, <code>id</code>, <code>last | head</code>, <code>echo {con,pre}{sent,fer}{s,ed}</code>, <code>time sleep 5</code>, <code>history | tail</code>.</p>
+<p><strong>Solution:</strong></p>
 </div>
 </div>
 
