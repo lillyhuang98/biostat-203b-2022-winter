@@ -33,7 +33,13 @@ sessionInfo()
 This exercise (and later in this course) uses the [MIMIC-IV data](https://mimic-iv.mit.edu), a freely accessible critical care database developed by the MIT Lab for Computational Physiology. Follow the instructions at <https://mimic.mit.edu/docs/gettingstarted/> to (1) complete the CITI `Data or Specimens Only Research` course and (2) obtain the PhysioNet credential for using the MIMIC-IV data. Display the verification links to your completion report and completion certificate here. (Hint: The CITI training takes a couple hours and the PhysioNet credentialing takes a couple days; do not leave it to the last minute.)
 
 **Solution:** verification link:
+
 <https://www.citiprogram.org/verify/?ke7fb7cca-b5f2-4be2-a84b-687c2fe48c86-46748792>
+
+<https://www.citiprogram.org/verify/?w10b811bd-7ca1-409e-8442-5a67ff290ec5-46748792>
+
+![](/home/lillyhuang25/biostat-203b-2022-winter/images/citi.jpg)
+
 
 ## Q3. Linux Shell Commands
 
@@ -217,7 +223,7 @@ Explain what `wget -nc` does. Do **not** put this text file `pg42671.txt` in Git
     head -n "$2" "$1" | tail -n "$3"
     ```
 
-Using `chmod` make the file executable by the owner, and run 
+    Using `chmod` make the file executable by the owner, and run 
 
     ```{bash eval=FALSE}
     chmod g+x middle.sh
@@ -227,9 +233,7 @@ Using `chmod` make the file executable by the owner, and run
 Explain the output. Explain the meaning of `"$1"`, `"$2"`, and `"$3"` in this shell script. Why do we need the first line of the shell script?
 
     **solution:**
-    The output is using the editor to type the command in the text and save it as a file `middle.sh`. Then the second      command is to make the file executable by the owner by setting the permission and displays `pg42671` file with end     lines of 20 and number lines of 5
-    `"$1"` means `filename` variables, `"$2"` means `endl_line` variables , and `"$3"`means `num_lines` variables.
-    The first line of the shell script `#!/bin/sh` is needed because it tells the systems to operature the script by       using `bin/sh` as the interpreter.
+    The output is using the editor to type the command in the text and save it as a file `middle.sh`. Then the second        command is to make the file executable by the owner by setting the permission and displays `pg42671` file with end       lines of 20 and number lines of 5 `"$1"` means `filename` variables, `"$2"` means `endl_line` variables , and            `"$3"`means `num_lines` variables.The first line of the shell script `#!/bin/sh` is needed because it tells the          systems to operature the script by using `bin/sh` as the interpreter.
 
 ### Q5. More fun with Linux
 
