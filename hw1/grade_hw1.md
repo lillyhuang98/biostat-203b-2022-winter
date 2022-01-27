@@ -1,4 +1,4 @@
-*Lily Huang*
+*Lilly Huang*
 
 ### Overall Grade: 105/120
 
