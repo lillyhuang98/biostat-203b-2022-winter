@@ -82,7 +82,7 @@ icustays_tble =
 icustays_tble %>%
   distinct(subject_id) %>%
     nrow() %>%
-      str_c(., " unique subject_id")  
+      str_c(., "unique subject_id")  
 ```
 
 
@@ -90,7 +90,7 @@ icustays_tble %>%
 icustays_tble %>%
   distinct(stay_id) %>% 
     nrow() %>%
-      str_c(., " unique stay_id")  
+      str_c(., "unique stay_id")  
 ```
 
 Yes, since 76540 unique stay_id presents while only 53150 unique subject_id presents,therefor, subject_id can have multipe ICU stays.
@@ -115,7 +115,18 @@ system(
 
 1. Import `admissions.csv.gz` as a tibble `admissions_tble`.
 
+```{r}
+admission_tble =
+  read_csv(str_c(mimic_path, "/core/admissions.csv.gz"))
+```
+
+
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
+
+```{r}
+
+```
+
 
 3. Summarize the following variables by graphics. 
 
