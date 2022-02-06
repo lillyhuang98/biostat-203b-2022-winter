@@ -43,9 +43,22 @@ There are quite a few utilities in R for reading plain text data files. Let us t
 Which function is fastest? Is there difference in the (default) parsed data types? (Hint: R function `system.time` measures run times.)
 
 For later questions, we stick to the tidyverse.
-```{r}
+**Solution**
 
+```{r}
+admissiondt = "/mnt/mimiciv/1.0/core/admissions.csv.gz"
 ```
+```{r}
+system.time(read.csv(admissiondt))
+```
+```{r}
+system.time(read_csv(admissiondt))
+```
+```{r}
+system.time(fread(admissiondt))
+```
+
+Fread in the popular data.table package is the fastest.There is a difference in data parse.
 
 ## Q2. ICU stays
 
@@ -98,6 +111,12 @@ Yes, since 76540 unique stay_id presents while only 53150 unique subject_id pres
 
 3. For each `subject_id`, let's only keep the first ICU stay in the tibble `icustays_tble`.
 
+```{r}
+icustays_tble =
+  distinct(icustays_tble, subject_id, .keep_all = TRUE)
+```
+
+
 
 ## Q3. `admission` data
 
@@ -119,8 +138,6 @@ system(
 admission_tble =
   read_csv(str_c(mimic_path, "/core/admissions.csv.gz"))
 ```
-
-
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
 
 ```{r}
