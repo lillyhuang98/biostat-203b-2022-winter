@@ -141,13 +141,15 @@ admission_tble =
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
 
 ```{r}
-
+admission_tble =
+  semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id"))
 ```
 
-
+11
 3. Summarize the following variables by graphics. 
 
 - admission year  
+
 - admission month  
 - admission month day  
 - admission week day  
