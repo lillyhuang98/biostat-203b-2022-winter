@@ -486,8 +486,21 @@ ggplot(admission_tble) +
 ##  [9] &quot;10009872,F,0,2168,2014 - 2016,&quot;                                
 ## [10] &quot;10011333,F,0,2132,2014 - 2016,&quot;</code></pre>
 <ol style="list-style-type: decimal">
-<li><p>Import <code>patients.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/core/patients/" class="uri">https://mimic.mit.edu/docs/iv/modules/core/patients/</a>) as a tibble <code>patients_tble</code> and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code>).</p></li>
-<li><p>Summarize variables <code>gender</code> and <code>anchor_age</code>, and explain any patterns you see.</p></li>
+<li>Import <code>patients.csv.gz</code> (<a href="https://mimic.mit.edu/docs/iv/modules/core/patients/" class="uri">https://mimic.mit.edu/docs/iv/modules/core/patients/</a>) as a tibble <code>patients_tble</code> and only keep the patients who have a match in <code>icustays_tble</code> (according to <code>subject_id</code>).</li>
+</ol>
+<pre class="r"><code>patients_tble=
+  read_csv(str_c(mimic_path, &quot;/core/patients.csv.gz&quot;))</code></pre>
+<pre><code>## Rows: 382278 Columns: 6
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (2): gender, anchor_year_group
+## dbl  (3): subject_id, anchor_age, anchor_year
+## date (1): dod
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Summarize variables <code>gender</code> and <code>anchor_age</code>, and explain any patterns you see.</li>
 </ol>
 </div>
 <div id="q5.-lab-results" class="section level2">
