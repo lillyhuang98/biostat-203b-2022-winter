@@ -149,11 +149,57 @@ admission_tble =
 3. Summarize the following variables by graphics. 
 
 - admission year  
+```{r}
+admyeartb=
+ggplot(admission_tble) +
+  geom_freqpoly(aes(year(admittime))) +
+  labs(x = "admission year", y = "rate",
+       title = "Table of Hospital Annully ICU Admission Rate")
+admyeartb
+```
+
 
 - admission month  
-- admission month day  
+
+```{r}
+admmontb=
+ggplot(admission_tble) +
+  geom_density(aes(month(admittime))) +
+  labs(x = "admission month", y = "rate",
+       title = "Table of Hospital Monthly ICU Admission Rate")
+admmontb
+```
+
+- admission month day 
+```{r}
+admmonthdaytb=
+ggplot(admission_tble) +
+  geom_density(aes(mday(admittime))) +
+  labs(x = "admission month day", y = "rate",
+       title = "Table of Hospital Month Day ICU Admission Rate")
+admmonthdaytb
+```
+
 - admission week day  
+```{r}
+admweekdaytb=
+ggplot(admission_tble) +
+  geom_bar(stat="count") + aes(weekdays(admittime))
+  labs(x = "admission week day", y = "count",
+       title = "Table of Hospital Week day ICU Admission Count")
+admweekdaytb
+```
+
 - admission hour (anything unusual?)  
+```{r}
+hourtb=
+ggplot(admission_tble) +
+  geom_bar(stat="count") + aes(hour(admittime))
+  labs(x = "admission hour", y = "count",
+       title = "Table of Hourly Hospital ICU Admission Count")
+hourtb
+```
+
 
 ## Q4. `patients` data
 
