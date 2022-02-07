@@ -58,7 +58,7 @@ system.time(read_csv(admissiondt))
 system.time(fread(admissiondt))
 ```
 
-Fread in the popular data.table package is the fastest.There is a difference in data parse.
+Fread in the popular data.table package is the fastest.There is a difference in how they read the data. 'Fread' read the data by mapping.However, 'read.csv' read the data line by line.
 
 ## Q2. ICU stays
 
@@ -145,7 +145,7 @@ admission_tble =
   semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id"))
 ```
 
-11
+
 3. Summarize the following variables by graphics. 
 
 - admission year  
