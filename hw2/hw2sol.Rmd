@@ -205,6 +205,7 @@ ggplot(admission_tble) +
 hourtb
 ```
 
+According to the bar graph showed, more patients are coming in to the hospital by midnight. The amount of patients that during the daytime is way less comparing to night time.
 
 ## Q4. `patients` data
 
