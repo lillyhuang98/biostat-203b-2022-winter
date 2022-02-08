@@ -445,9 +445,46 @@ Summarize following information using appropriate numerics or graphs.
 
 - `thirty_day_mort` vs demographic variables (ethnicity, language, insurance, marital_status, gender, age at hospital admission)
 
+```{r}
+demoplot=
+ggplot(mimic_icu_cohort, aes(x = ethnicity, fill = thirty_day_mort)) +
+  geom_bar(width=0.9) +
+  labs(x = "Ethnicity", y = "numbers of death in patients for 30 days", fill = "",
+       title = "The 30 Day Mortality Rate By Ethnicity") +
+ theme(legend.position = "bottom") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  scale_y_continuous(labels = scales::percent)
+demoplot
+```
+
+
 - `thirty_day_mort` vs first lab measurements
+
+```{r}
+ggplot(mimic_icu_cohort, aes(x = ethnicity, fill = thirty_day_mort)) +
+  geom_bar(color = "black", position = "fill", width = 0.7) +
+  labs(x = "Ethnicity", y = "Percentage of Death", fill = "",
+       title = "The 30 Day Mortality Rate By Ethnicity") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+   theme(legend.position = "bottom") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_text(aes(label = scales::percent(..count../sum(..count..))),
+            stat = 'count', position = position_fill(vjust=0.5), size = 3)
+```
+
 
 - `thirty_day_mort` vs first vital measurements
 
+```{r}
+
+```
+
+
 - `thirty_day_mort` vs first ICU unit
+
+```{r}
+
+```
+
 
