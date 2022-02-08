@@ -347,11 +347,17 @@ chartevents_tble =
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
 
 ```{r}
-
+chartevents_tble=
+  distinct(chartevents_tble, subject_id, .keep_all = TRUE)
 ```
 
 
-3. Summarize these vital measurements by appropriate numerics and graphics. 
+3. Summarize these vital measurements by appropriate numerics and graphics.
+
+```{r}
+
+```
+
 
 ## Q7. Putting things together
 
@@ -367,6 +373,11 @@ and columns contain at least following variables
 - first lab measurements during ICU stay  
 - first vital measurements during ICU stay
 - an indicator variable `thirty_day_mort` whether the patient died within 30 days of hospital admission (30 day mortality)
+
+```{r}
+
+```
+
 
 ## Q8. Exploratory data analysis (EDA)
 
