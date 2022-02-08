@@ -150,6 +150,7 @@ admission_tble =
 3. Summarize the following variables by graphics. 
 
 - admission year  
+
 ```{r}
 admyeartb=
 ggplot(admission_tble) +
@@ -172,6 +173,7 @@ admmontb
 ```
 
 - admission month day 
+
 ```{r}
 admmonthdaytb=
 ggplot(admission_tble) +
@@ -182,6 +184,7 @@ admmonthdaytb
 ```
 
 - admission week day  
+
 ```{r}
 admweekdaytb=
 ggplot(admission_tble) +
@@ -192,6 +195,7 @@ admweekdaytb
 ```
 
 - admission hour (anything unusual?)  
+
 ```{r}
 hourtb=
 ggplot(admission_tble) +
@@ -217,6 +221,8 @@ system(
 ```
 
 1. Import `patients.csv.gz` (<https://mimic.mit.edu/docs/iv/modules/core/patients/>) as a tibble `patients_tble` and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
+
+
 ```{r}
 patients_tble =
   read_csv(str_c(mimic_path, "/core/patients.csv.gz"))
@@ -275,8 +281,8 @@ system(
 
 ```{r}
 labevents=
-read_csv ("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz")
-  count(labevents)
+  read_csv ("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz")
+count(labevents)
 ```
 
 
@@ -425,10 +431,9 @@ mimic_icu_cohort=
   left_join(chartevents_tble, by = c("stay_id")) %>%
   mutate(age_hadm = anchor_age + year(admittime) - anchor_year) %>%
   filter((age_hadm) > 18) %>%
-  mutate(hadm_to_death = ifelse(is.na(deathtime)), Inf, deathtime -admittime) %>%
-  mutate((thirty_day_mort) = hadm_death) %>%
+  mutate(hadm_to_death = ifelse(is.na(deathtime), Inf, deathtime -admittime)) %>%
+  mutate(thirty_day_mort = hadm_to_death <= 2592000) %>%
   print(width = Inf)
-  write_rds("mimic_icu_cohort.rds")
 ```
 
 
