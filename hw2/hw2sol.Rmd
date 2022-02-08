@@ -138,6 +138,7 @@ system(
 admission_tble =
   read_csv(str_c(mimic_path, "/core/admissions.csv.gz"))
 ```
+
 2. Let's only keep the admissions that have a match in `icustays_tble` according to `subject_id` and `hadmi_id`.
 
 ```{r}
@@ -284,13 +285,13 @@ read_csv ("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz")
     Hint: `labevents.csv.gz` is a data file too big to be read in by the `read_csv` function in its default setting. Utilize the `col_select` and `lazy` options in the `read_csv` function to reduce the memory burden.
     
 ```{r}
-labevents_tble <- 
+labevents_tble = 
   read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz",
           col_select = c("subject_id", "itemid"), lazy = TRUE) %>%
-  filter(itemid == "50912" | itemid == "50971" | itemid == "50983" | 
-           itemid == "50902" 
-         | itemid == "50882" | itemid == "51221" | itemid == "51301" 
-         | itemid == "50931" | itemid == "50960" | itemid == "50893") %>%
+  filter(itemid == "50912" & itemid == "50971" 
+         & itemid == "50983" & itemid == "50902" & itemid == "50882"
+         & itemid == "51221" & itemid == "51301" & itemid == "50931"
+         & itemid == "50960" & itemid == "50893") %>%
   semi_join(icustays_tble, by = "subject_id")
 ```
 
@@ -298,7 +299,8 @@ labevents_tble <-
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay.
 
 ```{r}
-
+labevents_tble=
+  distinct(labevents_tble, subject_id, .keep_all = TRUE)
 ```
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
@@ -332,7 +334,22 @@ system(
 
 1. We are interested in the vitals for ICU patients: heart rate (220045), mean non-invasive blood pressure (220181), systolic non-invasive blood pressure (220179), body temperature in Fahrenheit (223761), and respiratory rate (220210). Retrieve a subset of `chartevents.csv.gz` only containing these items for the patients in `icustays_tble` as a tibble `chartevents_tble`.
 
+```{r}
+chartevents_tble =
+  read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz",
+          col_select = c("subject_id", "itemid"), lazy = TRUE) %>%
+  filter(itemid == "220045" & itemid == "220181" 
+         & itemid == "220179" & itemid == "223761" & itemid == "220210")
+  semi_join(icustays_tble, by = "subject_id")
+```
+
+
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
+
+```{r}
+
+```
+
 
 3. Summarize these vital measurements by appropriate numerics and graphics. 
 
