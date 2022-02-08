@@ -299,8 +299,27 @@ labevents_tble =
 3. Further restrict `labevents_tble` to the first lab measurement during the ICU stay.
 
 ```{r}
-labevents_tble=
-  distinct(labevents_tble, subject_id, .keep_all = TRUE)
+d_labitems_tble =
+  read_csv(str_c(mimic_path, "/hosp/d_labitems.csv.gz"))
+d_labitems_tble
+```
+
+```{r}
+labevents_tble =
+  read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz") %>% 
+  left_join(select(icustays_tble, subject_id, intime), 
+            by = c("subject_id")) %>%
+  filter(charttime > intime) %>%
+  group_by(subject_id, itemid) %>%
+  arrange(charttime, .by_group = TRUE) %>%
+  slice(1) %>%
+  select(-charttime, -intime) %>%
+  ungroup() %>%
+  left_join(select(d_labitems_tble, itemid, label), 
+            by = c("itemid" ))%>%
+  select(-itemid) %>%
+  pivot_wider(names_from =label, values_from = valuenum) %>%
+  print(width = Inf)
 ```
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
@@ -345,10 +364,33 @@ chartevents_tble =
 
 
 2. Further restrict `chartevents_tble` to the first vital measurement during the ICU stay. 
+```{r}
+read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz")
+```
 
 ```{r}
-chartevents_tble=
-  distinct(chartevents_tble, subject_id, .keep_all = TRUE)
+d1_labitems_tble =
+  read_csv(str_c(mimic_path, "/icu/d_items.csv.gz"))
+d1_labitems_tble
+```
+
+
+```{r}
+chartevents_tble =
+  read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz") %>% 
+  left_join(select(icustays_tble, subject_id, intime), 
+            by = c("subject_id")) %>%
+  filter(charttime > intime) %>%
+  group_by(subject_id, itemid) %>%
+  arrange(charttime, .by_group = TRUE) %>%
+  slice(1) %>%
+  select(-charttime, -intime) %>%
+  ungroup() %>%
+  left_join(select(d1_labitems_tble, itemid, label), 
+            by = c("itemid" ))%>%
+  select(-itemid) %>%
+  pivot_wider(names_from = label, values_from = valuenum) %>%
+  print(width = Inf)
 ```
 
 
@@ -382,8 +424,8 @@ mimic_icu_cohort=
   left_join(labevents_tble, by = c("subject_id")) %>%
   left_join(chartevents_tble, by = c("stay_id")) %>%
   mutate(age_hadm = anchor_age + year(admittime) - anchor_year) %>%
-  filter(age_hadm > 18) %>%
-  mutate(hadm_death = ifelse(is.na(deathtime), Inf, deathtime -admittime)) %>%
+  filter((age_hadm) > 18) %>%
+  mutate(hadm_to_death = ifelse(is.na(deathtime)), Inf, deathtime -admittime) %>%
   mutate((thirty_day_mort) = hadm_death) %>%
   print(width = Inf)
   write_rds("mimic_icu_cohort.rds")
@@ -394,6 +436,7 @@ mimic_icu_cohort=
 ## Q8. Exploratory data analysis (EDA)
 
 Summarize following information using appropriate numerics or graphs.
+
 
 - `thirty_day_mort` vs demographic variables (ethnicity, language, insurance, marital_status, gender, age at hospital admission)
 
