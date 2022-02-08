@@ -375,8 +375,20 @@ and columns contain at least following variables
 - an indicator variable `thirty_day_mort` whether the patient died within 30 days of hospital admission (30 day mortality)
 
 ```{r}
-
+mimic_icu_cohort=
+  icustays_tble %>%
+  left_join(admission_tble, by = c("subject_id","hadm_id")) %>%
+  left_join(patients_tble, by = c("subject_id")) %>%
+  left_join(labevents_tble, by = c("subject_id")) %>%
+  left_join(chartevents_tble, by = c("stay_id")) %>%
+  mutate(age_hadm = anchor_age + year(admittime) - anchor_year) %>%
+  filter(age_hadm > 18) %>%
+  mutate(hadm_death = ifelse(is.na(deathtime), Inf, deathtime -admittime)) %>%
+  mutate((thirty_day_mort) = hadm_death) %>%
+  print(width = Inf)
+  write_rds("mimic_icu_cohort.rds")
 ```
+
 
 
 ## Q8. Exploratory data analysis (EDA)
