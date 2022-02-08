@@ -273,9 +273,9 @@ system(
 1. Find how many rows are in `labevents.csv.gz`.
 
 ```{r}
-read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz",
-           show_col_types = FALSE, lazy = TRUE) %>%
-  nrow()
+labevents=
+read_csv ("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz")
+  count(labevents)
 ```
 
 
@@ -284,7 +284,14 @@ read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz",
     Hint: `labevents.csv.gz` is a data file too big to be read in by the `read_csv` function in its default setting. Utilize the `col_select` and `lazy` options in the `read_csv` function to reduce the memory burden.
     
 ```{r}
-
+labevents_tble <- 
+  read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz",
+          col_select = c("subject_id", "itemid"), lazy = TRUE) %>%
+  filter(itemid == "50912" | itemid == "50971" | itemid == "50983" | 
+           itemid == "50902" 
+         | itemid == "50882" | itemid == "51221" | itemid == "51301" 
+         | itemid == "50931" | itemid == "50960" | itemid == "50893") %>%
+  semi_join(icustays_tble, by = "subject_id")
 ```
 
 
