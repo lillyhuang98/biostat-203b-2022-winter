@@ -273,7 +273,9 @@ system(
 1. Find how many rows are in `labevents.csv.gz`.
 
 ```{r}
-
+read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz",
+           show_col_types = FALSE, lazy = TRUE) %>%
+  nrow()
 ```
 
 
