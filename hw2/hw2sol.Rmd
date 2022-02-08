@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, cache.lazy = FALSE)
 library(tidyverse)
 library(data.table)
 library(lubridate)
+library(vtable)
+library(qwraps2)
 ```
 
 ```{r}
@@ -332,8 +334,38 @@ labevents_tble =
 4. Summarize the lab measurements by appropriate numerics and graphics. 
 
 ```{r}
+labevents_tble %>%
+  pivot_longer("Bicarbonate" : "White Blood Cells", names_to = "variables", values_to = "values") %>%
+  select(-subject_id) %>%
+  summary(values) %>%
+  knitr::kable()
+
+
+
+
+
+
+
+
+
+
+
+
+  ggplot(aes(x = neighbourhood, y = price)) +
+  geom_boxplot() +
+  coord_flip() + 
+  ylim(0, 1000)
 
 ```
+
+
+```{r}
+ggplot(aes(x = response)) +
+  geom_bar() +
+  facet_wrap(vars(question), ncol = 3) +
+  labs(x = "lab measurement item", y = "levels of mesurements")
+```
+
 
 ## Q6. Vitals from charted events
 
@@ -432,8 +464,9 @@ mimic_icu_cohort=
   left_join(chartevents_tble, by = c("stay_id")) %>%
   mutate(age_hadm = anchor_age + year(admittime) - anchor_year) %>%
   filter((age_hadm) > 18) %>%
-  mutate(hadm_to_death = ifelse(is.na(deathtime), Inf, deathtime -admittime)) %>%
-  mutate(thirty_day_mort = hadm_to_death <= 2592000) %>%
+  mutate(hadm_death = ifelse(is.na(deathtime), 
+                             Inf, deathtime -admittime)) %>%
+  mutate(thirty_day_mort = hadm_death <= 2592000) %>%
   print(width = Inf)
 ```
 
@@ -448,13 +481,22 @@ Summarize following information using appropriate numerics or graphs.
 
 ```{r}
 demoplot=
-ggplot(mimic_icu_cohort, aes(x = ethnicity, fill = thirty_day_mort)) +
-  geom_bar(width=0.9) +
-  labs(x = "Ethnicity", y = "numbers of death in patients for 30 days", fill = "",
+  mimic_icu_cohort %>%
+  select(ethnicity, thirty_day_mort) %>%
+  group_by(ethnicity) %>%
+  filter(ethnicity == "WHITE" | ethnicity == "BLACK/AFRICAN AMERICAN" | ethnicity == "ASIAN") %>%
+  count(thirty_day_mort, name = 'number') %>%
+  ggplot(aes(x = ethnicity, y= number, fill = thirty_day_mort)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Ethnicity", y = "numbers of death in patients for 30 days",
        title = "The 30 Day Mortality Rate By Ethnicity") +
- theme(legend.position = "bottom") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(
+    breaks = c(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000), 
+    labels = c(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000), 
+               limits = c(0, 40000)) +
+  theme(legend.position = "bottom") +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
 demoplot
 ```
 
