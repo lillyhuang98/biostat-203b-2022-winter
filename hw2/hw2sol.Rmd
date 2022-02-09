@@ -20,6 +20,7 @@ library(data.table)
 library(lubridate)
 library(vtable)
 library(qwraps2)
+
 ```
 
 ```{r}
@@ -314,12 +315,18 @@ d_labitems_tble
 ```
 
 ```{r}
-labevents_tble =
-  read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz") %>% 
-  left_join(select(icustays_tble, subject_id, intime), 
-            by = c("subject_id")) %>%
+new_icutable = 
+  icustays_tble %>% 
+  select(subject_id, intime)
+```
+
+```{r}
+labevents_tble = 
+  read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz") %>%
+  left_join(new_icutable, by = c("subject_id")) %>% 
+  drop_na() %>% 
+  filter(charttime > intime) %>% 
   group_by(subject_id, itemid) %>%
-  filter(charttime > intime) %>%
   arrange(charttime, .by_group = TRUE) %>%
   slice(n=1) %>% 
   select(-intime , -charttime) %>%
@@ -330,36 +337,51 @@ labevents_tble =
   pivot_wider(names_from =label, values_from = valuenum) %>%
   print(width = Inf)
 labevents_tble
+
 ```
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
+```{r}
+labevents_summary = 
+  labevents_tble %>%
+  rename("Calcium" = "Calcium, Total") %>% 
+  select(-subject_id) %>% 
+  summary() %>% 
+  knitr::kable()
+
+labevents_summary
+```
+
 
 ```{r}
 flabplot=
   labevents_tble %>%
-  select("Bicarbonate" : "White Blood Cells") %>%
-  count(variables, name = 'number') %>%
-  ggplot(aes(x = number, y= `Bicarbonate`, fill = `Bicarbonate`)) +
+  rename("Calcium" = "Calcium, Total") %>% 
+  pivot_longer("Bicarbonate" : "White Blood Cells", 
+               names_to = "item_id", 
+               values_to = "values") %>% 
+  select(-subject_id) %>% 
+  group_by(item_id) %>%
+  filter(item_id == "Bicarbonate" 
+         | item_id == "Calcium" 
+         | item_id == "Chloride" 
+         | item_id == "Creatinine" 
+         | item_id == "Magnesium" 
+         | item_id == "Potassium" 
+         | item_id == "Hematocrit"
+         ) %>% 
+  ggplot(aes(x = item_id, y = values)) +
   geom_boxplot() +
-  labs(x = "Bicarbonate measurement", y = "First lab measurement",
-       title = "First measurement of Bicarbonate") +
-  scale_y_continuous(
-    breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55),
-    labels = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55), 
-               limits = c(0, 55)) +
-  theme(plot.title = element_text(hjust = 0.5)) 
-
+  coord_flip() + 
+  ylim(0, 50) +
+  labs(x = "First Lab Measurement", 
+       y = "level",
+       title = "First Lab Measurement of ICU patients")
+ 
 flabplot
 
 ```
 
-
-```{r}
-ggplot(aes(x = response)) +
-  geom_bar() +
-  facet_wrap(vars(question), ncol = 3) +
-  labs(x = "lab measurement item", y = "levels of mesurements")
-```
 
 
 ## Q6. Vitals from charted events
@@ -391,9 +413,12 @@ system(
 chartevents_tble =
   read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz",
           col_select = c("subject_id", "itemid"), lazy = TRUE) %>%
-  filter(itemid == "220045" & itemid == "220181" 
-         & itemid == "220179" & itemid == "223761" & itemid == "220210")
-  semi_join(icustays_tble, by = "subject_id")
+  filter(itemid == "220045" 
+         & itemid == "220181" 
+         & itemid == "220179" 
+         & itemid == "223761" 
+         & itemid == "220210")
+  semi_join(icustays_tble, by = c ("subject_id"))
 ```
 
 
@@ -408,12 +433,16 @@ d1_labitems_tble =
 d1_labitems_tble
 ```
 
+```{r}
+new_icutable = 
+  icustays_tble %>% 
+  select(subject_id, intime)
+```
 
 ```{r}
 chartevents_tble =
   read_csv("/mnt/mimiciv/1.0/icu/chartevents_filtered_itemid.csv.gz") %>% 
-  left_join(select(icustays_tble, subject_id, intime), 
-            by = c("subject_id")) %>%
+  left_join(new_icutable, by = c("subject_id")) %>%
   filter(charttime > intime) %>%
   group_by(subject_id, itemid) %>%
   arrange(charttime, .by_group = TRUE) %>%
@@ -431,9 +460,41 @@ chartevents_tble =
 3. Summarize these vital measurements by appropriate numerics and graphics.
 
 ```{r}
-
+chartevents_summary = 
+  chartevents_tble %>%
+  select(-subject_id, -hadm_id, -stay_id) %>% 
+  summary() %>% 
+  knitr::kable()
+chartevents_summary
 ```
 
+
+```{r}
+vitalplot=
+  chartevents_tble %>%
+  pivot_longer("Bicarbonate" : "White Blood Cells", 
+               names_to = "item_id", 
+               values_to = "values") %>% 
+  select(-subject_id) %>% 
+  group_by(item_id) %>%
+  filter(item_id == "Bicarbonate" 
+         | item_id == "Calcium" 
+         | item_id == "Chloride" 
+         | item_id == "Creatinine" 
+         | item_id == "Magnesium" 
+         | item_id == "Potassium" 
+         | item_id == "Hematocrit"
+         ) %>% 
+  ggplot(aes(x = item_id, y = values)) +
+  geom_boxplot() +
+  coord_flip() + 
+  ylim(0, 50) +
+  labs(x = "First Lab Measurement", 
+       y = "level",
+       title = "First Lab Measurement of ICU patients")
+ 
+vitalplot
+```
 
 ## Q7. Putting things together
 
@@ -498,7 +559,9 @@ demoplot=
     labels = c(0, 3000, 6000, 9000, 12000, 15000, 18000, 21000, 24000, 
                27000, 30000, 33000, 36000, 39000), 
                limits = c(0, 39000)) +
-  theme(plot.title = element_text(hjust = 0.08)) 
+  theme(
+      axis.text.x = element_text(angle = 340, vjust = 0.5, hjust = 0.5),
+      legend.position = "right")
 
 demoplot
 ```
