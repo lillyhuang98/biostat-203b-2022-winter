@@ -318,43 +318,38 @@ labevents_tble =
   read_csv("/mnt/mimiciv/1.0/hosp/labevents_filtered_itemid.csv.gz") %>% 
   left_join(select(icustays_tble, subject_id, intime), 
             by = c("subject_id")) %>%
-  filter(charttime > intime) %>%
   group_by(subject_id, itemid) %>%
+  filter(charttime > intime) %>%
   arrange(charttime, .by_group = TRUE) %>%
-  slice(1) %>%
-  select(-charttime, -intime) %>%
+  slice(n=1) %>% 
+  select(-intime , -charttime) %>%
   ungroup() %>%
   left_join(select(d_labitems_tble, itemid, label), 
             by = c("itemid" ))%>%
   select(-itemid) %>%
   pivot_wider(names_from =label, values_from = valuenum) %>%
   print(width = Inf)
+labevents_tble
 ```
 
 4. Summarize the lab measurements by appropriate numerics and graphics. 
 
 ```{r}
-labevents_tble %>%
-  pivot_longer("Bicarbonate" : "White Blood Cells", names_to = "variables", values_to = "values") %>%
-  select(-subject_id) %>%
-  summary(values) %>%
-  knitr::kable()
-
-
-
-
-
-
-
-
-
-
-
-
-  ggplot(aes(x = neighbourhood, y = price)) +
+flabplot=
+  labevents_tble %>%
+  select("Bicarbonate" : "White Blood Cells") %>%
+  count(variables, name = 'number') %>%
+  ggplot(aes(x = number, y= `Bicarbonate`, fill = `Bicarbonate`)) +
   geom_boxplot() +
-  coord_flip() + 
-  ylim(0, 1000)
+  labs(x = "Bicarbonate measurement", y = "First lab measurement",
+       title = "First measurement of Bicarbonate") +
+  scale_y_continuous(
+    breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55),
+    labels = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55), 
+               limits = c(0, 55)) +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+flabplot
 
 ```
 
@@ -462,11 +457,13 @@ mimic_icu_cohort=
   left_join(patients_tble, by = c("subject_id")) %>%
   left_join(labevents_tble, by = c("subject_id")) %>%
   left_join(chartevents_tble, by = c("stay_id")) %>%
-  mutate(age_hadm = anchor_age + year(admittime) - anchor_year) %>%
+  mutate(age_hadm = anchor_age + 
+           year(admittime) - anchor_year) %>%
   filter((age_hadm) > 18) %>%
   mutate(hadm_death = ifelse(is.na(deathtime), 
                              Inf, deathtime -admittime)) %>%
-  mutate(thirty_day_mort = hadm_death <= 2592000) %>%
+  mutate(thirty_day_mort = 
+           hadm_death <= 2592000) %>%
   print(width = Inf)
 ```
 
@@ -484,18 +481,24 @@ demoplot=
   mimic_icu_cohort %>%
   select(ethnicity, thirty_day_mort) %>%
   group_by(ethnicity) %>%
-  filter(ethnicity == "WHITE" | ethnicity == "BLACK/AFRICAN AMERICAN" | ethnicity == "ASIAN") %>%
+  filter(ethnicity == "WHITE" | ethnicity == "BLACK/AFRICAN AMERICAN" |
+           ethnicity == "ASIAN" | 
+           ethnicity == "UNKNOWN" | ethnicity == "OTHER"
+          | ethnicity == "HISPANIC/LATINO"
+         | ethnicity == "AMERICAN INDIAN/ALASKA NATIVE"
+         | ethnicity == "UNABLE TO OBTAIN") %>%
   count(thirty_day_mort, name = 'number') %>%
   ggplot(aes(x = ethnicity, y= number, fill = thirty_day_mort)) +
   geom_bar(stat = "identity") +
   labs(x = "Ethnicity", y = "numbers of death in patients for 30 days",
-       title = "The 30 Day Mortality Rate By Ethnicity") +
+       title = "The 30 Day Mortality By Ethnicity") +
   scale_y_continuous(
-    breaks = c(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000), 
-    labels = c(0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000), 
-               limits = c(0, 40000)) +
-  theme(legend.position = "bottom") +
-  theme(plot.title = element_text(hjust = 0.5)) 
+    breaks = c(0, 3000, 6000, 9000, 12000, 15000, 18000, 21000, 24000, 
+               27000, 30000, 33000, 36000, 39000), 
+    labels = c(0, 3000, 6000, 9000, 12000, 15000, 18000, 21000, 24000, 
+               27000, 30000, 33000, 36000, 39000), 
+               limits = c(0, 39000)) +
+  theme(plot.title = element_text(hjust = 0.08)) 
 
 demoplot
 ```
@@ -504,17 +507,10 @@ demoplot
 - `thirty_day_mort` vs first lab measurements
 
 ```{r}
-ggplot(mimic_icu_cohort, aes(x = ethnicity, fill = thirty_day_mort)) +
-  geom_bar(color = "black", position = "fill", width = 0.7) +
-  labs(x = "Ethnicity", y = "Percentage of Death", fill = "",
-       title = "The 30 Day Mortality Rate By Ethnicity") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-   theme(legend.position = "bottom") +
-  scale_y_continuous(labels = scales::percent) +
-  scale_fill_brewer(palette = "Pastel1") +
-  geom_text(aes(label = scales::percent(..count../sum(..count..))),
-            stat = 'count', position = position_fill(vjust=0.5), size = 3)
+
 ```
+
+
 
 
 - `thirty_day_mort` vs first vital measurements
@@ -527,7 +523,26 @@ ggplot(mimic_icu_cohort, aes(x = ethnicity, fill = thirty_day_mort)) +
 - `thirty_day_mort` vs first ICU unit
 
 ```{r}
+Firstplot=
+  mimic_icu_cohort %>%
+  select(first_careunit, thirty_day_mort) %>%
+  group_by(first_careunit) %>%
+  filter(first_careunit == "Cardiac Vascular Intensive Care Unit (CVICU)" 
+         | first_careunit == "Trauma SICU (TSICU)" ) %>%
+  count(thirty_day_mort, name = 'number') %>%
+  ggplot(aes(x = first_careunit, y= number, fill = thirty_day_mort)) +
+  geom_bar(stat = "identity") +
+  labs(x = "First_careunit", y = "Numbers of death in patients for 30 days",
+       title = "The 30 Day Mortality By first ICU unit") +
+  scale_y_continuous(
+    breaks = c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 
+               4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000), 
+    labels = c(0,500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 
+               4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 10000), 
+               limits = c(0, 10000)) +
+  theme(plot.title = element_text(hjust = 0.08)) 
 
+Firstplot
 ```
 
 
