@@ -156,7 +156,7 @@ admission_tble =
 
 ```{r}
 admyeartb=
-ggplot(admission_tble) +
+  ggplot(admission_tble) +
   geom_freqpoly(aes(year(admittime))) +
   labs(x = "admission year", y = "rate",
        title = "Table of Hospital Annully ICU Admission Rate")
@@ -168,7 +168,7 @@ admyeartb
 
 ```{r}
 admmontb=
-ggplot(admission_tble) +
+  ggplot(admission_tble) +
   geom_density(aes(month(admittime))) +
   labs(x = "admission month", y = "rate",
        title = "Table of Hospital Monthly ICU Admission Rate")
@@ -179,7 +179,7 @@ admmontb
 
 ```{r}
 admmonthdaytb=
-ggplot(admission_tble) +
+  ggplot(admission_tble) +
   geom_density(aes(mday(admittime))) +
   labs(x = "admission month day", y = "rate",
        title = "Table of Hospital Month Day ICU Admission Rate")
@@ -190,7 +190,7 @@ admmonthdaytb
 
 ```{r}
 admweekdaytb=
-ggplot(admission_tble) +
+  ggplot(admission_tble) +
   geom_bar(stat="count") + aes(weekdays(admittime))
   labs(x = "admission week day", y = "count",
        title = "Table of Hospital Week day ICU Admission Count")
@@ -201,7 +201,7 @@ admweekdaytb
 
 ```{r}
 hourtb=
-ggplot(admission_tble) +
+  ggplot(admission_tble) +
   geom_bar(stat="count") + aes(hour(admittime))
   labs(x = "admission hour", y = "count",
        title = "Table of Hourly Hospital ICU Admission Count")
@@ -244,7 +244,7 @@ patients_tble =
 
 ```{r}
 genderplot=
-ggplot(patients_tble) +
+  ggplot(patients_tble) +
   geom_boxplot(aes(x=gender,y=anchor_age)) +
   labs(x = "gender", y = "anchor_age",
        title = "The Anchor Age Of Patients In The ICU According To The Gender")
@@ -417,7 +417,7 @@ chartevents_tble =
          & itemid == "220181" 
          & itemid == "220179" 
          & itemid == "223761" 
-         & itemid == "220210")
+         & itemid == "220210") %>%
   semi_join(icustays_tble, by = c ("subject_id"))
 ```
 
@@ -512,10 +512,14 @@ and columns contain at least following variables
 ```{r}
 mimic_icu_cohort=
   icustays_tble %>%
-  left_join(admission_tble, by = c("subject_id","hadm_id")) %>%
-  left_join(patients_tble, by = c("subject_id")) %>%
-  left_join(labevents_tble, by = c("subject_id")) %>%
-  left_join(chartevents_tble, by = c("stay_id")) %>%
+  left_join(admission_tble, 
+            by = c("subject_id","hadm_id")) %>%
+  left_join(patients_tble, 
+            by = c("subject_id")) %>%
+  left_join(labevents_tble, 
+            by = c("subject_id")) %>%
+  left_join(chartevents_tble, 
+            by = c("stay_id")) %>%
   mutate(age_hadm = anchor_age + 
            year(admittime) - anchor_year) %>%
   filter((age_hadm) > 18) %>%
@@ -568,16 +572,72 @@ demoplot
 - `thirty_day_mort` vs first lab measurements
 
 ```{r}
+#bicarbonate measurement
+biplot=
+  mimic_icu_cohort %>%
+  select(Bicarbonate, thirty_day_mort) %>%
+  group_by(Bicarbonate) %>%
+  count(thirty_day_mort, name = 'number') %>%
+  ggplot(aes(x = Bicarbonate, y= number, fill = thirty_day_mort)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Bicarbonate", y = "numbers of death in patients for 30 days",
+       title = "The 30 Day Mortality By Biocarbonate measurement") +
+  scale_y_continuous(
+    breaks = c(0, 1000, 2000, 3000, 4000, 5000, 6000),
+    labels = c(0, 1000, 2000, 3000, 4000, 5000, 6000),
+               limits = c(0, 6000)) +
+  theme(
+      axis.text.x = element_text(angle = 340, vjust = 0.5, hjust = 0.5),
+      legend.position = "right")
 
+biplot
 ```
+```{r}
+#calcium
+caplot=
+  mimic_icu_cohort %>%
+  rename("Calcium" = "Calcium, Total") %>% 
+  select(Calcium, thirty_day_mort) %>%
+  group_by(Calcium) %>%
+  count(thirty_day_mort, name = 'number') %>%
+  ggplot(aes(x = Calcium, y= number, fill = thirty_day_mort)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Calcium", y = "numbers of death in patients for 30 days",
+       title = "The 30 Day Mortality By Calcium measurement") +
+  scale_y_continuous(
+    breaks = c(0, 1000, 2000, 3000),
+    labels = c(0, 1000, 2000, 3000),
+               limits = c(0, 3000)) +
+  theme(
+      axis.text.x = element_text(
+        angle = 340, vjust = 0.5, hjust = 0.5),
+      legend.position = "right")
 
-
-
+caplot
+```
 
 - `thirty_day_mort` vs first vital measurements
 
 ```{r}
-
+#heart rate
+hrplot=
+  mimic_icu_cohort %>%
+  select(`Heart Rate`, thirty_day_mort) %>%
+  group_by('Heart Rate') %>%
+  count(thirty_day_mort, name = 'number') %>%
+  ggplot(aes(x = "Heart Rate", y= number, fill = thirty_day_mort)) +
+  geom_histogram(stat = "identity") +
+  labs(x = "Rate", y = "numbers of death in patients for 30 days",
+       title = "The 30 Day Mortality By Heart Rate measurement") +
+  scale_y_continuous(
+    breaks = c(0, 50, 100, 150, 200),
+    labels = c(0, 50, 100, 150, 200),
+               limits = c(0, 250)) +
+  theme(
+      axis.text.x = element_text(
+        angle = 360, vjust = 0.5, hjust = 0.5),
+      legend.position = "right")
+hrplot
 ```
 
 
