@@ -472,26 +472,24 @@ chartevents_summary
 ```{r}
 vitalplot=
   chartevents_tble %>%
-  pivot_longer("Bicarbonate" : "White Blood Cells", 
+  pivot_longer("Heart Rate" : "Temperature Fahrenheit", 
                names_to = "item_id", 
                values_to = "values") %>% 
   select(-subject_id) %>% 
   group_by(item_id) %>%
-  filter(item_id == "Bicarbonate" 
-         | item_id == "Calcium" 
-         | item_id == "Chloride" 
-         | item_id == "Creatinine" 
-         | item_id == "Magnesium" 
-         | item_id == "Potassium" 
-         | item_id == "Hematocrit"
+  filter(item_id == "Heart Rate" 
+         | item_id == "Non Invasive Blood Pressure systolic" 
+         | item_id == "Non Invasive Blood Pressure mean" 
+         | item_id == "Respiratory Rate" 
+         | item_id == "Temperature Fahrenheit"
          ) %>% 
   ggplot(aes(x = item_id, y = values)) +
   geom_boxplot() +
   coord_flip() + 
-  ylim(0, 50) +
-  labs(x = "First Lab Measurement", 
+  ylim(0, 150) +
+  labs(x = "First Vital Measurement", 
        y = "level",
-       title = "First Lab Measurement of ICU patients")
+       title = "First Vital Measurement of ICU patients")
  
 vitalplot
 ```
