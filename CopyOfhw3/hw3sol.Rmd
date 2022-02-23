@@ -1,7 +1,7 @@
 ---
 title: "Biostat 203B Homework 3"
 subtitle: Due Feb 25 @ 11:59PM
-output:Lilly Huang
+output:
   # ioslides_presentation: default
   html_document:
     toc: true
@@ -84,41 +84,19 @@ icustays_tble <- icustays_tble %>%
 4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
 ```{r}
 # # TODO
-# admissions_tble <-
-admission_tble <- tbl(con, "admissions") %>%
-  show_query() %>%
-  print(width = Inf)
-```
-
-
-```{r}
-admission_tble <- admission_tble %>% 
-  semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
-  show_query() %>%
-  print(width = Inf)
+# admissions_tble <- 
 ```
 
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
 # patients_tble <-
-patients_tble <- tbl(con, "patients") %>%
-  show_query() %>%
-  print(width = Inf)
 ```
-```{r}
-patients_tble <- patients_tble %>% 
-  semi_join (patients_tble, icustays_tble, by = c("subject_id")) %>%
-  show_query() %>%
-  print(width = Inf)
-```
-
 
 6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
 ```{r}
 # # TODO
 # labevents_tble <- 
-
 ```
 Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
 ```{r}
