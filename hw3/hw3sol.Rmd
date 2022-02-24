@@ -80,22 +80,37 @@ icustays_tble <- icustays_tble %>%
   print(width = Inf)
 ```
 
-
 4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
 ```{r}
 # # TODO
 # connect to admissions_tble
-admission_tble <- tbl(con, "admissions") %>%
+# full ICU stays table
+icustays_tble <- tbl(con, "icustays") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+
+```{r}
+admission_tble <- 
+  tbl(con, "admissions") %>%
   semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
+```
+
+
+```{r}
 ```
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
 # connect to patients_tble
 patients_tble <- 
-  tbl(con, "patients") %>%
+  tbl(con, "patients")
+```
+
+```{r}
   semi_join (patients_tble, icustays_tble, by = c("subject_id")) %>%
   show_query() %>%
   print(width = Inf)
@@ -106,7 +121,10 @@ patients_tble <-
 # # TODO
 # connect to labevents_tble 
 labevents_tble <- 
-  tbl(con, "labevents") %>%
+  tbl(con, "labevents")
+```
+
+```{r}
   semi_join (labevents_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
@@ -130,19 +148,44 @@ Only keep the first lab measurements during ICU stay and pivot lab items to beco
 ```{r}
 # # TODO
 # labevents_tble <- labevents_tble %>% 
-
+icustays_tble %>%
+  select(subject_id, outtime, intime) %>%
+  group_by(subject_id) %>%
+  filter(outtime > intime) %>%
+  summarise_all(min) %>%
+  select(-intime , -outtime) %>%
+  left_join(labevents_tble, 
+            by = c("subject_id")) %>%
+  pivot_wider(names_from =itemid, values_from = valuenum) %>%
+  group_by(subject_id) %>%
+  print(width = Inf)
 ```
+
+
+
 
 7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
 
 ```{r}
 chartevents_tble <- 
-  tbl(con, "chartevents") %>%
+  tbl(con, "chartevents") 
+```
+
+```{r}
+chartevents_tble %>% 
   semi_join (chartevents_tble, icustays_tble, 
              by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
 ```
+
+```{r}
+chartevents_tble %>%
+  semi_join (chartevents_tble, HW2_tble, by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
 Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.
 ```{r}
 # # TODO
