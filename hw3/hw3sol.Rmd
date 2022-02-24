@@ -84,42 +84,64 @@ icustays_tble <- icustays_tble %>%
 4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
 ```{r}
 # # TODO
-# admissions_tble <-
-admission_tble <- tbl(con, "admissions") %>%
-  show_query() %>%
-  print(width = Inf)
-```
-
-
-```{r}
-admission_tble <- admission_tble %>% 
+# connect to admissions_tble
+admission_tble <- 
+  tbl(con, "admissions") %>%
   semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
 ```
-
 5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
 ```{r}
 # # TODO
-# patients_tble <-
-patients_tble <- tbl(con, "patients") %>%
-  show_query() %>%
-  print(width = Inf)
-```
-```{r}
-patients_tble <- patients_tble %>% 
+# connect to patients_tble
+patients_tble <- 
+  tbl(con, "patients") %>%
   semi_join (patients_tble, icustays_tble, by = c("subject_id")) %>%
   show_query() %>%
   print(width = Inf)
 ```
 
-
 6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
 ```{r}
 # # TODO
-# labevents_tble <- 
-
+# connect to labevents_tble 
+labevents_tble <- 
+  tbl(con, "labevents") %>%
+  semi_join (labevents_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
 ```
+
+```{r}
+HW2_tble =
+  mimic_icu_cohort %>%
+  rename(subject_id = subject_id.x, hadm_id = hadm_id.x) %>%
+  select(-subject_id.y, -hadm_id.y)
+```
+
+```{r}
+labevents_tble %>%
+  semi_join (labevents_tble, HW2_tble, by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+```{r}
+d_labitems_tble <- tbl(con, "d_labitems") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+```{r}
+hw2_tble <- mimic_icu_cohort %>% 
+  select(subject_id, Bicarbonate, `Calcium, Total`, Chloride) %>% 
+  group_by(subject_id) %>% 
+  summarise_all(min) %>%
+  left_join(icustays_tble, by = c("subject_id", "intime")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
 Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
 ```{r}
 # # TODO
