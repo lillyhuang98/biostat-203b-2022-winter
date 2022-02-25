@@ -178,16 +178,7 @@ first_newlabevents_tble =
   arrange(subject_id) %>%
   summarise_all(min) %>%
   print(width = Inf)
-  
-  
-  
-  
-  
- 
 ```
-
-
-
 
 
 7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
@@ -198,24 +189,42 @@ chartevents_tble <-
 ```
 
 ```{r}
-chartevents_tble %>% 
+newchartevents_tble =
+  chartevents_tble %>%
   semi_join (chartevents_tble, icustays_tble, 
              by = c("subject_id", "hadm_id")) %>%
+  select(subject_id, itemid, charttime, valuenum) %>%
+  filter(itemid == 220045 | itemid == 220181 | itemid == 220179
+         | itemid == 223761 | itemid == 220210) %>%
+  group_by(subject_id)%>%
   show_query() %>%
   print(width = Inf)
 ```
 
-```{r}
-chartevents_tble %>%
-  semi_join (chartevents_tble, HW2_tble, by = c("subject_id", "hadm_id")) %>%
-  show_query() %>%
-  print(width = Inf)
-```
 
 Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.
 ```{r}
 # # TODO
-# chartevents_tble <- chartevents_tble %>% ...
+# chartevents_tble <- chartevents_tble %>% 
+
+first_newchartevents_tble =
+  newchartevents_tble %>%
+  group_by(subject_id, itemid) %>% 
+  summarise_all(min) %>%
+  show_query() %>%
+  select(itemid, valuenum,subject_id, charttime) %>%
+  pivot_wider(names_from = itemid,
+              names_prefix = "newid",
+              values_from = valuenum) %>%
+  rename("Heart_rate" = "newid220045",
+         "Non_Invasive_Blood_Pressure_mean" = "newid220181",
+         "Non_Invasive_Blood_Pressure_systolic" = "newid220179",
+         "Temperature_Fahrenheit" = "newid223761",
+         "Respiratory_rate" = "newid220210") %>%
+  group_by(subject_id) %>%  
+  arrange(subject_id) %>%
+  summarise_all(min) %>%
+  print(width = Inf)
 ```
 
 8. Put things together. This step is similar to Q7 of HW2. Using one chain of pipes `%>%` to perform following data wrangling steps: (i) start with the `icustays_tble` for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission >= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an `icu_cohort.rds` R data file in the `mimiciv_shiny` folder.
@@ -230,6 +239,25 @@ if (!dir.exists("mimiciv_shiny")) {
 ```{r}
 # # TODO
 # icu_cohort <- icustays_tble %>% ...
+icu_cohort <- icustays_tble %>%
+  left_join(admission_tble, 
+            by = c("subject_id","hadm_id")) %>% 
+  left_join(patients_tble, 
+            by = c("subject_id")) %>% 
+  left_join(first_newlabevents_tble, 
+            by = c("subject_id")) %>% 
+  left_join(first_newchartevents_tble, 
+            by = c("subject_id")) %>% 
+  mutate(age_hadm = anchor_age + 
+           year(admittime) - anchor_year) %>%
+  filter((age_hadm) > 18) %>%
+  mutate(hadm_death = day(dod) -day(admittime)) %>%
+  mutate(thirty_day_mort = 
+           hadm_death <= 30) %>%
+icu_cohort
+```
+```{r}
+saveRDS(as.data.frame(icu_cohort), file = "icu_cohort.rds")
 ```
 
 Close database connection and clear workspace.
@@ -241,4 +269,5 @@ rm(list = ls())
 ## Q2. Shiny app
 
 Develop a Shiny app for exploring the ICU cohort data created in Q1. The app should reside in the `mimiciv_shiny` folder. The app should provide easy access to the graphical and numerical summaries of variables (demographics, lab measurements, vitals) in the ICU cohort.
+
 
