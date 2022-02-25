@@ -42,7 +42,7 @@ ui <- fluidPage(
 server <- function(input, output) {
 
   # Fill in the spot we created for a plot
-  output$demoPlot <- renderPlot({
+  output$demoplot <- renderPlot({
     
     # Render a barplot
     data %>%
