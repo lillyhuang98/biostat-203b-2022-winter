@@ -99,7 +99,8 @@ admission_tble <-
 
 ```{r}
 admission_tble %>%
-semi_join(admission_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
+semi_join(admission_tble, icustays_tble, 
+          by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
 ```
@@ -126,7 +127,8 @@ labevents_tble <-
 ```
 
 ```{r}
-  semi_join (labevents_tble, icustays_tble, by = c("subject_id", "hadm_id")) %>%
+  semi_join (labevents_tble, icustays_tble, 
+             by = c("subject_id", "hadm_id")) %>%
   show_query() %>%
   print(width = Inf)
 ```
@@ -141,7 +143,8 @@ HW2_tble =
 ```{r}
 newlabevents_tble = 
   labevents_tble %>%
-  semi_join (labevents_tble, HW2_tble, by = c("subject_id", "hadm_id")) %>%
+  semi_join (labevents_tble, HW2_tble, 
+             by = c("subject_id", "hadm_id")) %>%
   select(subject_id, itemid, hadm_id, valuenum, charttime) %>%
   filter(itemid == 50912 | itemid == 50971 | itemid == 50983
          | itemid == 50902 | itemid == 50882 | itemid == 51221
