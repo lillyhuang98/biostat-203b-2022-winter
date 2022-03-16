@@ -62,25 +62,32 @@ saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
 ```
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+```{r}
+icu_cohort2 <- icu_cohort1 %>%
+  select(anchor_age, creatinine, potassium, sodium, chloride, bicarbonate, hematocrit, white_blood_cell_count, glucose, magnesium, Heart_rate, Non_Invasive_Blood_Pressure_systolic, Non_Invasive_Blood_Pressure_mean, Temperature_Fahrenheit, Respiratory_rate)
+saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
+```
+```{r}
+readRDS("icu_cohort2.rds")
+```
+
 
 ```{r}
-#seqTime <- system.time(
-#micenew <- miceRanger(
-#      icu_cohort1
-#   , m=3
-#    , returnModels = FALSE
-#    , verbose=FALSE
-#    , max.depth=10)
-# )
+micenew <- miceRanger(
+      icu_cohort2
+   , m=3
+    , returnModels = FALSE
+    , verbose=FALSE
+    , max.depth=10)
 ```
 
 5. Make imputation diagnostic plots and explain what they mean.
 ```{r}
-micenew<- readRDS("icu_cohort1.rds")
+micenew
 ```
 
 ```{r}
-plotDistributions(micenew)
+plotDistributions(micenew,vars='allNumeric')
 ```
 
 
