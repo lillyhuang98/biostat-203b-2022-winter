@@ -49,24 +49,39 @@ The mice is a method to deal with missing data. After input, the missing data wi
 icu_cohort <-readRDS("icu_cohort.rds")
 icu_cohort
 ```
+
 ```{r}
  colSums(is.na(icu_cohort))
 ```
 Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_status', 'edregtime' , 'edouttime' , 'dod' ,'hadm_death', 'thirty_day_mort'.
 
 ```{r}
-icu_cohort <- icu_cohort %>%
+icu_cohort1 <- icu_cohort %>%
   select(-deathtime, -marital_status, -edregtime, -edouttime, -dod, -hadm_death, -thirty_day_mort)
-icu_cohort 
+saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
 ```
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
 ```{r}
+#seqTime <- system.time(
+#micenew <- miceRanger(
+#      icu_cohort1
+#   , m=3
+#    , returnModels = FALSE
+#    , verbose=FALSE
+#    , max.depth=10)
+# )
 ```
 
 5. Make imputation diagnostic plots and explain what they mean.
+```{r}
+micenew<- readRDS("icu_cohort1.rds")
+```
 
+```{r}
+plotDistributions(micenew)
+```
 
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
