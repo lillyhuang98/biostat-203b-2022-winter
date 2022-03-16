@@ -33,15 +33,45 @@ Through the Shiny app developed in HW3, we observe abundant missing values in th
 
 1. Explain the jargon MCAR, MAR, and MNAR.
 
+MCAR means completely missing at random. This means that dependent variables missing data is not dependent on the observed or unobserved value.
+MAR means missing at random. This means that the dependent variable missing data is missing depends only on the observed data.
+MNAR means missing not at random. This means that the missing data is neither MCAR nor MAR, there will be other reasons why the data is missing.
+
+
 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
+
+The mice is a method to deal with missing data. After input, the missing data will be going through a series of iterations. Each of the iterations are predictive models. The specified missing data will be filled by using other numbers or variables in the same dataset.The process will keep going on until the variable all filled. Usually no more than 5 iteration is needed.The accuracy of the filling depends on how dense are the original datasets.
+
 
 3. Perform a data quality check of the ICU stays data. Discard variables with substantial missingness, say >5000 `NA`s. Replace apparent data entry errors by `NA`s.
 
+```{r}
+icu_cohort <-readRDS("icu_cohort.rds")
+icu_cohort
+```
+```{r}
+ colSums(is.na(icu_cohort))
+```
+Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_status', 'edregtime' , 'edouttime' , 'dod' ,'hadm_death', 'thirty_day_mort'.
+
+```{r}
+icu_cohort <- icu_cohort %>%
+  select(-deathtime, -marital_status, -edregtime, -edouttime, -dod, -hadm_death, -thirty_day_mort)
+icu_cohort 
+```
+
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+
+```{r}
+```
 
 5. Make imputation diagnostic plots and explain what they mean.
 
+
+
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+
+
 
 ## Q2. Predicting 30-day mortality
 
