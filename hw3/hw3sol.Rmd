@@ -1,0 +1,276 @@
+---
+title: "Biostat 203B Homework 3"
+subtitle: Due Feb 25 @ 11:59PM
+output:
+  # ioslides_presentation: default
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+Display machine information:
+```{r}
+sessionInfo()
+```
+
+Load database libraries and the tidyverse frontend:
+```{r}
+suppressPackageStartupMessages(library(dbplyr))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+library(DBI)
+library(bigrquery)
+```
+
+## Q1. Compile the ICU cohort in HW2 from the Google BigQuery database 
+
+Below is an outline of steps.
+
+1. Load the service account token.
+```{r}
+# path to the service account token 
+if (Sys.info()[["nodename"]] == "biostat-203b-teaching-server") {
+  # on teaching server
+  satoken <- "/mnt/mimiciv/1.0/biostat-203b-2022winter-3fdc2392ac39.json"
+} else {
+  # on my own Mac laptop
+  satoken <- "/Users/huazhou/Documents/github.com/ucla-biostat-203b/2022winter/hw/hw3/biostat-203b-2022winter-3fdc2392ac39.json"
+}
+# BigQuery authentication using service account
+bq_auth(
+  path = satoken,
+  # email = "mimiciv-bigquery@biostat-203b-2022winter.iam.gserviceaccount.com",
+  # scopes = c("https://www.googleapis.com/auth/bigquery",
+  #   "https://www.googleapis.com/auth/cloud-platform")
+)
+```
+
+1. Connect to BigQuery database `mimic4_v1_0_203b` in GCP (Google Cloud Platform), using the billing account `biostat-203b-2022winter`.
+```{r}
+# Connect to the BigQuery database `biostat-203b-2022winter.mimic4_v1_0_203b`
+con <- dbConnect(
+    bigrquery::bigquery(),
+    project = "biostat-203b-2022winter",
+    dataset = "mimic4_v1_0_203b",
+    billing = "biostat-203b-2022winter"
+)
+con
+```
+
+2. List all tables in the `mimic4_v1_0_203b` database.
+```{r}
+dbListTables(con)
+```
+
+3. Connect to the `icustays` table.
+```{r}
+# full ICU stays table
+icustays_tble <- tbl(con, "icustays") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+We only keep the first ICU stay. Following code is kind of a hack, using the `summarise_all(min)` function. It seems that `slice_min()`, `slice_head()`, `distinct(, .keep_all = TRUE)` don't work with `dbplyr`+`bigrquery` at the moment.
+```{r}
+icustays_tble <- icustays_tble %>% 
+  select(subject_id, intime) %>% 
+  group_by(subject_id) %>% 
+  summarise_all(min) %>%
+  left_join(icustays_tble, by = c("subject_id", "intime")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+4. Connect to the `admissions` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id` and `hadm_id`).
+```{r}
+# # TODO
+# connect to admissions_tble
+# full ICU stays table
+icustays_tble <- tbl(con, "icustays") %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+
+```{r}
+admission_tble <- 
+  tbl(con, "admissions")
+```
+
+
+```{r}
+admission_tble %>%
+semi_join(admission_tble, icustays_tble, 
+          by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+5. Connect to the `patients` table and only keep the patients who have a match in `icustays_tble` (according to `subject_id`).
+```{r}
+# # TODO
+# connect to patients_tble
+patients_tble <- 
+  tbl(con, "patients")
+```
+
+```{r}
+  semi_join (patients_tble, icustays_tble, by = c("subject_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+6. Connect to the `labevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the lab items listed in HW2. 
+```{r}
+# # TODO
+# connect to labevents_tble 
+labevents_tble <- 
+  tbl(con, "labevents")
+```
+
+```{r}
+  semi_join (labevents_tble, icustays_tble, 
+             by = c("subject_id", "hadm_id")) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+```{r}
+HW2_tble =
+  mimic_icu_cohort %>%
+  rename(subject_id = subject_id.x, hadm_id = hadm_id.x) %>%
+  select(-subject_id.y, -hadm_id.y)
+```
+
+```{r}
+newlabevents_tble = 
+  labevents_tble %>%
+  semi_join (labevents_tble, HW2_tble, 
+             by = c("subject_id", "hadm_id")) %>%
+  select(subject_id, itemid, hadm_id, valuenum, charttime) %>%
+  filter(itemid == 50912 | itemid == 50971 | itemid == 50983
+         | itemid == 50902 | itemid == 50882 | itemid == 51221
+         | itemid == 51301 | itemid == 50931 | itemid == 50960
+         | itemid == 50893) %>%
+  group_by(subject_id) %>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+Only keep the first lab measurements during ICU stay and pivot lab items to become variables/columns.
+
+```{r}
+first_newlabevents_tble =
+  newlabevents_tble %>%
+  group_by(subject_id, itemid) %>% 
+  summarise_all(min) %>%
+  show_query() %>%
+  select(itemid, valuenum,subject_id, charttime) %>%
+  pivot_wider(names_from = itemid,
+              names_prefix = "id",
+              values_from = valuenum) %>%
+  rename("creatinine" = "id50912",
+         "potassium" = "id50971",
+         "sodium" = "id50983",
+         "chloride" = "id50902",
+         "bicarbonate" = "id50882",
+         "hematocrit" = "id51221",
+         "white_blood_cell_count" = "id51301",
+         "glucose" = "id50931",
+         "magnesium" = "id50960",
+         "calcium" = "id50893") %>%
+  group_by(subject_id) %>%  
+  arrange(subject_id) %>%
+  summarise_all(min) %>%
+  print(width = Inf)
+```
+
+
+7. Connect to `chartevents` table and retrieve a subset that only contain subjects who appear in `icustays_tble` and the chart events listed in HW2.
+
+```{r}
+chartevents_tble <- 
+  tbl(con, "chartevents") 
+```
+
+```{r}
+newchartevents_tble =
+  chartevents_tble %>%
+  semi_join (chartevents_tble, icustays_tble, 
+             by = c("subject_id", "hadm_id")) %>%
+  select(subject_id, itemid, charttime, valuenum) %>%
+  filter(itemid == 220045 | itemid == 220181 | itemid == 220179
+         | itemid == 223761 | itemid == 220210) %>%
+  group_by(subject_id)%>%
+  show_query() %>%
+  print(width = Inf)
+```
+
+
+Only keep the first chart events during ICU stay and pivot chart events to become variables/columns.
+```{r}
+# # TODO
+# chartevents_tble <- chartevents_tble %>% 
+
+first_newchartevents_tble =
+  newchartevents_tble %>%
+  group_by(subject_id, itemid) %>% 
+  summarise_all(min) %>%
+  show_query() %>%
+  select(itemid, valuenum,subject_id, charttime) %>%
+  pivot_wider(names_from = itemid,
+              names_prefix = "newid",
+              values_from = valuenum) %>%
+  rename("Heart_rate" = "newid220045",
+         "Non_Invasive_Blood_Pressure_mean" = "newid220181",
+         "Non_Invasive_Blood_Pressure_systolic" = "newid220179",
+         "Temperature_Fahrenheit" = "newid223761",
+         "Respiratory_rate" = "newid220210") %>%
+  group_by(subject_id) %>%  
+  arrange(subject_id) %>%
+  summarise_all(min) %>%
+  print(width = Inf)
+```
+
+8. Put things together. This step is similar to Q7 of HW2. Using one chain of pipes `%>%` to perform following data wrangling steps: (i) start with the `icustays_tble` for the first ICU stay of each unique patient, (ii) merge in admissions and patients tables, (iii) keep adults only (age at admission >= 18), (iv) merge in the labevents and chartevents tables, (v) create an indicator for 30-day mortality, (vi) save the final tibble to an `icu_cohort.rds` R data file in the `mimiciv_shiny` folder.
+
+```{r}
+# make a directory mimiciv_shiny
+if (!dir.exists("mimiciv_shiny")) {
+  dir.create("mimiciv_shiny")
+}
+```
+
+```{r}
+# # TODO
+# icu_cohort <- icustays_tble %>% ...
+icu_cohort <- icustays_tble %>%
+  left_join(admission_tble, 
+            by = c("subject_id","hadm_id")) %>% 
+  left_join(patients_tble, 
+            by = c("subject_id")) %>% 
+  left_join(first_newlabevents_tble, 
+            by = c("subject_id")) %>% 
+  left_join(first_newchartevents_tble, 
+            by = c("subject_id")) %>% 
+  mutate(age_hadm = anchor_age + 
+           year(admittime) - anchor_year) %>%
+  filter((age_hadm) > 18) %>%
+  mutate(hadm_death = day(dod) -day(admittime)) %>%
+  mutate(thirty_day_mort = 
+           hadm_death <= 30) %>%
+icu_cohort
+```
+```{r}
+saveRDS(as.data.frame(icu_cohort), file = "icu_cohort.rds")
+```
+
+Close database connection and clear workspace.
+```{r, eval=F}
+dbDisconnect(con)
+rm(list = ls())
+```
+
+## Q2. Shiny app
+
+Develop a Shiny app for exploring the ICU cohort data created in Q1. The app should reside in the `mimiciv_shiny` folder. The app should provide easy access to the graphical and numerical summaries of variables (demographics, lab measurements, vitals) in the ICU cohort.
+
+
