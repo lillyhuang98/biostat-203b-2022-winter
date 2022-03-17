@@ -25,6 +25,7 @@ suppressPackageStartupMessages(library(miceRanger))
 
 ## Q1. Missing data
 
+
 Through the Shiny app developed in HW3, we observe abundant missing values in the MIMIC-IV ICU cohort we created. In this question, we use multiple imputation to obtain a data set without missing values.
 
 0. Read following tutorials on the R package miceRanger for imputation: <https://github.com/farrellday/miceRanger>, <https://cran.r-project.org/web/packages/miceRanger/vignettes/miceAlgorithm.html>.
@@ -36,7 +37,6 @@ Through the Shiny app developed in HW3, we observe abundant missing values in th
 MCAR means completely missing at random. This means that dependent variables missing data is not dependent on the observed or unobserved value.
 MAR means missing at random. This means that the dependent variable missing data is missing depends only on the observed data.
 MNAR means missing not at random. This means that the missing data is neither MCAR nor MAR, there will be other reasons why the data is missing.
-
 
 2. Explain in a couple of sentences how the Multiple Imputation by Chained Equations (MICE) work.
 
@@ -53,40 +53,42 @@ icu_cohort
 ```{r}
  colSums(is.na(icu_cohort))
 ```
+
 Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_status', 'edregtime' , 'edouttime' , 'dod' ,'hadm_death', 'thirty_day_mort'.
+
 ```{r}
 icu_cohort1 <- icu_cohort %>%
-  select(-deathtime, -marital_status, -edregtime, 
-         -edouttime, -dod, -hadm_death)
+  select(-deathtime, 
+         -edregtime, 
+         -edouttime, 
+         -dod, 
+         -hadm_death)
 saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
 ```
 
-
-
 ```{r}
 .quantile_cut <- function(x){
-  lb <- quantile(df[, x] , 0.25, na.rm = TRUE)
-  ub <- quantile(df[, x] , 0.75, na.rm = TRUE)
-  iqr <- ub - lb
-  df[which(df[, x] <= lb - 1.5*iqr | df[, x] >= ub + 1.5*iqr), x] <- NA
-  return(df[,x])
-}
-
+   lb <- quantile(df[, x] , 0.25, na.rm = TRUE)
+   ub <- quantile(df[, x] , 0.75, na.rm = TRUE)
+   iqr <- ub - lb
+   df[which(df[, x] <= lb - 1.5*iqr | df[, x] >= ub + 1.5*iqr), x] <- NA
+   return(df[,x])
+ }
 ```
 
 ```{r}
-var_list <- c("anchor_age", "creatinine", "potassium", 
-         "sodium", "chloride", "bicarbonate", 
-         "hematocrit", "white_blood_cell_count", 
-         "glucose", "magnesium", "Heart_rate", 
-         "Non_Invasive_Blood_Pressure_systolic", 
-         "Non_Invasive_Blood_Pressure_mean", 
-         "Temperature_Fahrenheit", "Respiratory_rate","thirty_day_mort")
-
+ var_list <- c("anchor_age", "creatinine", "potassium", 
+          "sodium", "chloride", "bicarbonate", 
+          "hematocrit", "white_blood_cell_count", 
+          "glucose", "magnesium", "Heart_rate", 
+          "Non_Invasive_Blood_Pressure_systolic", 
+          "Non_Invasive_Blood_Pressure_mean", 
+          "Temperature_Fahrenheit", "Respiratory_rate","thirty_day_mort")
+ 
 icu_cohort1 %>% 
   select(all_of(var_list)) -> df
-name_list <- names(df %>% select_if(is.numeric))[-c(1, 2)] %>% as.list()
-numeric_var <- lapply(name_list, .quantile_cut) 
+  name_list <- names(df %>% select_if(is.numeric))[-c(1, 2)] %>% as.list()
+  numeric_var <- lapply(name_list, .quantile_cut)
 ```
 
 
@@ -98,73 +100,75 @@ for (i in seq_along(icu_cohort1)) {
 ```
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
+
 ```{r}
 icu_cohort2 <- icu_cohort1 %>%
-  select(anchor_age, creatinine, potassium, 
-         sodium, chloride, bicarbonate, 
-         hematocrit, white_blood_cell_count, 
-         glucose, magnesium, Heart_rate, 
+  select(anchor_age, 
+         creatinine, 
+         potassium, 
+         sodium, 
+         chloride, 
+         bicarbonate, 
+         hematocrit, 
+         white_blood_cell_count, 
+         glucose, 
+         magnesium, 
+         Heart_rate, 
          Non_Invasive_Blood_Pressure_systolic, 
          Non_Invasive_Blood_Pressure_mean, 
-         Temperature_Fahrenheit, Respiratory_rate, thirty_day_mort)
+         Temperature_Fahrenheit, Respiratory_rate)
 saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
 ```
+
 ```{r}
 readRDS("icu_cohort2.rds")
 ```
 
 ```{r}
-colSums(is.na(icu_cohort2))
-```
-
-```{r}
-require(miceRanger)
-set.seed(1)
-data(icu_cohort2)
-seqTime <- system.time(
-  miceObj <- miceRanger(
-      icu_cohort1
-    , m=3
-    , returnModels = FALSE
-    , verbose=FALSE
-    , max.depth=10
-  )
-)
-miceObj
-
-
-```
-
-
-
-```{r}
 micenew <- miceRanger(
-      icu_cohort1
-    , m=3
-    , returnModels = TRUE
-    , verbose=FALSE
-    , max.depth=10)
+   icu_cohort2,
+    m=3,
+    returnModels = FALSE,
+    verbose = FALSE,
+    max.depth=10)
+micenew
 ```
 
 
 5. Make imputation diagnostic plots and explain what they mean.
 
 ```{r}
-micenew
+plotDistributions(micenew, vars='allNumeric')
 ```
+The red line is the density of the original, non-missing data in the icu_cohort. The smaller, black lines are the density of the imputed values in icu_cohort.Since the black lines and the red lines are matched, which shows the data was Missing Completely at Random (MCAR).
 
 ```{r}
-plotDistributions(miceObj,vars='allNumeric')
+plotCorrelations(micenew,vars='allNumeric')
 ```
+The plotCorrelations function shows you a boxplot of the correlations between imputed values in every combination of datasets, at each iteration. There are 5 iterations for each variables.
+
+```{r}
+plotModelError(micenew,vars='allNumeric')
+```
+Each model returns the OOB accuracy for classification, and r-squared for regression by using Random Forests model. The graph shows that how they converged in different iteration process.
 
 
-6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy is.
+```{r}
+plotVarConvergence(micenew, vars='allNumeric')
+```
+The Center and Dispersion Convergence plots were used here and it is used to determine whether the missing data locations are correlated with other value.
 
+6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy 
 
+I will choose imputed data set 1 to be used in Q2. The reason why we dont want the one imputed data set because a single data set is because it may cause the accuracy problem.It is better to use multiple imputation data set because  it can help up to avoid overestimating things, such as test statistics. 
 
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
+```{r}
+
+```
+
 
 ```{r}
 log_model = glm(thirty_day_mort ~ .,data = icu_cohort1, family = binomial(link = 'logit'))
