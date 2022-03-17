@@ -54,17 +54,44 @@ icu_cohort
  colSums(is.na(icu_cohort))
 ```
 Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_status', 'edregtime' , 'edouttime' , 'dod' ,'hadm_death', 'thirty_day_mort'.
-
 ```{r}
 icu_cohort1 <- icu_cohort %>%
-  select(-deathtime, -marital_status, -edregtime, -edouttime, -dod, -hadm_death)
+  select(-deathtime, -marital_status, -edregtime, 
+         -edouttime, -dod, -hadm_death)
 saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
+```
+
+
+
+```{r}
+.quantile_cut <- function(x){
+  lb <- quantile(df[, x] , 0.25, na.rm = TRUE)
+  ub <- quantile(df[, x] , 0.75, na.rm = TRUE)
+  iqr <- ub - lb
+  df[which(df[, x] <= lb - 1.5*iqr | df[, x] >= ub + 1.5*iqr), x] <- NA
+  return(df[,x])
+}
 
 ```
 
 ```{r}
-na_codes <- c("?", "")
+var_list <- c("anchor_age", "creatinine", "potassium", 
+         "sodium", "chloride", "bicarbonate", 
+         "hematocrit", "white_blood_cell_count", 
+         "glucose", "magnesium", "Heart_rate", 
+         "Non_Invasive_Blood_Pressure_systolic", 
+         "Non_Invasive_Blood_Pressure_mean", 
+         "Temperature_Fahrenheit", "Respiratory_rate","thirty_day_mort")
 
+icu_cohort1 %>% 
+  select(all_of(var_list)) -> df
+name_list <- names(df %>% select_if(is.numeric))[-c(1, 2)] %>% as.list()
+numeric_var <- lapply(name_list, .quantile_cut) 
+```
+
+
+```{r}
+na_codes <- c("?", "")
 for (i in seq_along(icu_cohort1)) {
     icu_cohort1[[i]][icu_cohort1[[i]] %in% na_codes] <- NA
 }
@@ -73,20 +100,46 @@ for (i in seq_along(icu_cohort1)) {
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 ```{r}
 icu_cohort2 <- icu_cohort1 %>%
-  select(anchor_age, creatinine, potassium, sodium, chloride, bicarbonate, hematocrit, white_blood_cell_count, glucose, magnesium, Heart_rate, Non_Invasive_Blood_Pressure_systolic, Non_Invasive_Blood_Pressure_mean, Temperature_Fahrenheit, Respiratory_rate)
-
-
-
+  select(anchor_age, creatinine, potassium, 
+         sodium, chloride, bicarbonate, 
+         hematocrit, white_blood_cell_count, 
+         glucose, magnesium, Heart_rate, 
+         Non_Invasive_Blood_Pressure_systolic, 
+         Non_Invasive_Blood_Pressure_mean, 
+         Temperature_Fahrenheit, Respiratory_rate, thirty_day_mort)
 saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
 ```
 ```{r}
 readRDS("icu_cohort2.rds")
 ```
 
+```{r}
+colSums(is.na(icu_cohort2))
+```
+
+```{r}
+require(miceRanger)
+set.seed(1)
+data(icu_cohort2)
+seqTime <- system.time(
+  miceObj <- miceRanger(
+      icu_cohort1
+    , m=3
+    , returnModels = FALSE
+    , verbose=FALSE
+    , max.depth=10
+  )
+)
+miceObj
+
+
+```
+
+
 
 ```{r}
 micenew <- miceRanger(
-      icu_cohort2
+      icu_cohort1
     , m=3
     , returnModels = TRUE
     , verbose=FALSE
@@ -101,7 +154,7 @@ micenew
 ```
 
 ```{r}
-plotDistributions(micenew,vars='allNumeric')
+plotDistributions(miceObj,vars='allNumeric')
 ```
 
 
