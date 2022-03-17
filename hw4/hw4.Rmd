@@ -57,14 +57,26 @@ Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_st
 
 ```{r}
 icu_cohort1 <- icu_cohort %>%
-  select(-deathtime, -marital_status, -edregtime, -edouttime, -dod, -hadm_death, -thirty_day_mort)
+  select(-deathtime, -marital_status, -edregtime, -edouttime, -dod, -hadm_death)
 saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
+
+```
+
+```{r}
+na_codes <- c("?", "")
+
+for (i in seq_along(icu_cohort1)) {
+    icu_cohort1[[i]][icu_cohort1[[i]] %in% na_codes] <- NA
+}
 ```
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 ```{r}
 icu_cohort2 <- icu_cohort1 %>%
   select(anchor_age, creatinine, potassium, sodium, chloride, bicarbonate, hematocrit, white_blood_cell_count, glucose, magnesium, Heart_rate, Non_Invasive_Blood_Pressure_systolic, Non_Invasive_Blood_Pressure_mean, Temperature_Fahrenheit, Respiratory_rate)
+
+
+
 saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
 ```
 ```{r}
@@ -75,13 +87,15 @@ readRDS("icu_cohort2.rds")
 ```{r}
 micenew <- miceRanger(
       icu_cohort2
-   , m=3
-    , returnModels = FALSE
+    , m=3
+    , returnModels = TRUE
     , verbose=FALSE
     , max.depth=10)
 ```
 
+
 5. Make imputation diagnostic plots and explain what they mean.
+
 ```{r}
 micenew
 ```
@@ -98,6 +112,13 @@ plotDistributions(micenew,vars='allNumeric')
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
+
+```{r}
+log_model = glm(thirty_day_mort ~ .,data = icu_cohort1, family = binomial(link = 'logit'))
+
+summary(log_model)
+```
+
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 
