@@ -1,7 +1,8 @@
 ---
 title: "Biostat 203B Homework 4"
 subtitle: Due Mar 18 @ 11:59PM
-output:Lilly Huang
+Name: Lilly Huang
+output:
   # ioslides_presentation: default
   html_document:
     toc: true
@@ -157,9 +158,9 @@ icudata <- icudata[[2]]
 ```{r}
 library(caret)
 set.seed(20220318)
-Index <- createDataPartition(icudata$thirtyday_mort, p=0.8, list=FALSE)
-train <- data[Index,]
-test <- data[-Index,]
+ICUindex <- createDataPartition(icudata$thirtyday_mort, p=0.8, list=FALSE)
+train <- data[ICUindex,]
+test <- data[-ICUindex,]
 ```
 2. Train the models using the training set.
 **method1**
