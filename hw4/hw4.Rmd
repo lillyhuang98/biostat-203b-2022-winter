@@ -222,7 +222,9 @@ icuglm <-
     train$thirtyday_mort,
     family = "binomial", 
   type.measure = "mse")
-icuglm
+icumin <- icuglm$lambda.min
+iculse <- icuglm$lambda.1se
+coef(icuglm, s = iculse)
 ```
 
 3. Compare model prediction performance on the test set.
@@ -234,7 +236,17 @@ log2 <- ifelse(log1> 0.8, TRUE, FALSE)
 
 
 ```{r}
-Compare_models <-table(observed = test$thirtyday_mort, predicted = log2)
+Compare_models <-table(traininngset = test$thirtyday_mort, testingset = log2)
 Compare_models
+```
+```{r}
+comparelasso1 <- 
+  predict(icuglm, 
+          newx = model.matrix(
+            test$thirtyday_mort ~ ., test),
+          s = iculse, type = "response")
+comparelasso2 <- ifelse(comparelasso1 > 0.8, TRUE, FALSE)
+compare_models2 <- table(trainingset = test$thirtyday_mort, testingset = comparelasso2)
+compare_models2
 ```
 
