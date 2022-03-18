@@ -1,7 +1,7 @@
 ---
 title: "Biostat 203B Homework 4"
 subtitle: Due Mar 18 @ 11:59PM
-output:
+output:Lilly Huang
   # ioslides_presentation: default
   html_document:
     toc: true
@@ -66,7 +66,6 @@ Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_st
 ```{r}
 icu_cohort1 <- icu_cohort %>%
   select(-language,
-         -marital_status,
          -edregtime, 
          -edouttime,
          -dod, 
@@ -79,7 +78,12 @@ saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
 
 ```{r}
 icu_cohort2 <- icu_cohort1 %>%
-  select(anchor_age, 
+  select(anchor_age,
+         ethnicity,
+         insurance,
+         first_careunit,
+         marital_status,
+         thirtyday_mort,
          creatinine, 
          potassium, 
          sodium, 
@@ -93,8 +97,7 @@ icu_cohort2 <- icu_cohort1 %>%
          Non_Invasive_Blood_Pressure_systolic, 
          Non_Invasive_Blood_Pressure_mean, 
          Temperature_Fahrenheit, 
-         Respiratory_rate,
-         thirtyday_mort)
+         Respiratory_rate)
 
 saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
 ```
@@ -143,27 +146,51 @@ I will choose imputed data set 1 to be used in Q2. The reason why we don't want 
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
-
-
 ```{r}
-library(caret)
+icudata <- completeData(micenew)
+icudata <- icudata[[2]]
 ```
+
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 
 ```{r}
 library(caret)
-set.seed(2022)
-index <- createDataPartition(icu_cohort1 
-                             $thirtyday_mort, 
-                             p=0.8, list=FALSE)
-trainingset <- data[index]
-testingset <- data[-index]
+set.seed(20220318)
+Index <- createDataPartition(icudata$thirtyday_mort, p=0.8, list=FALSE)
+train <- data[Index,]
+test <- data[-Index,]
 ```
 2. Train the models using the training set.
+**method1**
 
 ```{r}
-log_model = glm(thirtyday_mort ~ anchor_age 
+log_model1 = glm(as.factor(thirtyday_mort) ~ anchor_age
+                + marital_status
+                + ethnicity
+                + creatinine
+                + potassium
+                + sodium
+                + chloride
+                + bicarbonate
+                + hematocrit
+                + white_blood_cell_count
+                + glucose
+                + magnesium
+                + Heart_rate
+                + Non_Invasive_Blood_Pressure_systolic
+                + Non_Invasive_Blood_Pressure_mean
+                + Temperature_Fahrenheit
+                + Respiratory_rate,
+                data =train, family = binomial(link = 'logit'))
+
+summary(log_model2)
+```
+
+
+
+```{r}
+log_model2 = glm(as.factor(thirtyday_mort) ~ anchor_age 
                 + marital_status 
                 + creatinine
                 + potassium
@@ -179,11 +206,39 @@ log_model = glm(thirtyday_mort ~ anchor_age
                 + Non_Invasive_Blood_Pressure_mean
                 + Temperature_Fahrenheit
                 + Respiratory_rate,
-                data =trainingset, family = binomial(link = 'logit'))
+                data =test, family = binomial(link = 'logit'))
 
-summary(log_model)
+summary(log_model2)
 ```
+
+**method2**
+```{r}
+library(glmnet)
+```
+```{r}
+icuglm <- 
+  cv.glmnet(model.matrix(
+    thirtyday_mort ~ ., train),
+    train$thirtyday_mort,
+  alpha = 1, family = "binomial", 
+  type.measure = "mse")
+icuglm
 ```
 
 3. Compare model prediction performance on the test set.
+
+```{r}
+log1 <- predict(log_model1, test, type = "response")
+log2 <- ifelse(log1> 0.8, TRUE, FALSE)
+```
+
+
+```{r}
+Compare_models <-table(observed = test$thirtyday_mort, predicted = log2)
+Compare_models
+```
+```{r}
+log3 <- predict(icuglm, test, type = "response")
+log4 <- ifelse(log3> 0.8, TRUE, FALSE)
+```
 
