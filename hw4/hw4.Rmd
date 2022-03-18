@@ -51,6 +51,13 @@ icu_cohort
 ```
 
 ```{r}
+na_codes <- c("?", "")
+for (i in seq_along(icu_cohort)) {
+    icu_cohort[[i]][icu_cohort[[i]] %in% na_codes] <- NA
+}
+```
+
+```{r}
  colSums(is.na(icu_cohort))
 ```
 
@@ -58,46 +65,15 @@ Here, we drop the column that had NA over 5000, we drop 'deathtime',' marital_st
 
 ```{r}
 icu_cohort1 <- icu_cohort %>%
-  select(-deathtime, 
+  select(-language,
+         -marital_status,
          -edregtime, 
-         -edouttime, 
+         -edouttime,
          -dod, 
          -hadm_death)
 saveRDS(as.data.frame(icu_cohort1), file = "icu_cohort1.rds")
 ```
 
-```{r}
-.quantile_cut <- function(x){
-   lb <- quantile(df[, x] , 0.25, na.rm = TRUE)
-   ub <- quantile(df[, x] , 0.75, na.rm = TRUE)
-   iqr <- ub - lb
-   df[which(df[, x] <= lb - 1.5*iqr | df[, x] >= ub + 1.5*iqr), x] <- NA
-   return(df[,x])
- }
-```
-
-```{r}
- var_list <- c("anchor_age", "creatinine", "potassium", 
-          "sodium", "chloride", "bicarbonate", 
-          "hematocrit", "white_blood_cell_count", 
-          "glucose", "magnesium", "Heart_rate", 
-          "Non_Invasive_Blood_Pressure_systolic", 
-          "Non_Invasive_Blood_Pressure_mean", 
-          "Temperature_Fahrenheit", "Respiratory_rate","thirty_day_mort")
- 
-icu_cohort1 %>% 
-  select(all_of(var_list)) -> df
-  name_list <- names(df %>% select_if(is.numeric))[-c(1, 2)] %>% as.list()
-  numeric_var <- lapply(name_list, .quantile_cut)
-```
-
-
-```{r}
-na_codes <- c("?", "")
-for (i in seq_along(icu_cohort1)) {
-    icu_cohort1[[i]][icu_cohort1[[i]] %in% na_codes] <- NA
-}
-```
 
 4. Impute missing values by `miceRanger` (request $m=3$ data sets). This step is computational intensive. Make sure to save the imputation results as a file. Hint: Setting `max.depth=10` in the `miceRanger` function may cut some computing time.
 
@@ -116,7 +92,10 @@ icu_cohort2 <- icu_cohort1 %>%
          Heart_rate, 
          Non_Invasive_Blood_Pressure_systolic, 
          Non_Invasive_Blood_Pressure_mean, 
-         Temperature_Fahrenheit, Respiratory_rate)
+         Temperature_Fahrenheit, 
+         Respiratory_rate,
+         thirtyday_mort)
+
 saveRDS(as.data.frame(icu_cohort2), file = "icu_cohort2.rds")
 ```
 
@@ -133,7 +112,6 @@ micenew <- miceRanger(
     max.depth=10)
 micenew
 ```
-
 
 5. Make imputation diagnostic plots and explain what they mean.
 
@@ -160,26 +138,52 @@ The Center and Dispersion Convergence plots were used here and it is used to det
 
 6. Choose one of the imputed data sets to be used in Q2. This is **not** a good idea to use just one imputed data set or to average multiple imputed data sets. Explain in a couple of sentences what the correct Multiple Imputation strategy 
 
-I will choose imputed data set 1 to be used in Q2. The reason why we dont want the one imputed data set because a single data set is because it may cause the accuracy problem.It is better to use multiple imputation data set because  it can help up to avoid overestimating things, such as test statistics. 
+I will choose imputed data set 1 to be used in Q2. The reason why we don't want the one imputed data set because a single data set is because it may cause the accuracy problem.It is better to use multiple imputation data set because  it can help up to avoid overestimating things, such as test statistics. 
 
 ## Q2. Predicting 30-day mortality
 
 Develop at least two analytic approaches for predicting the 30-day mortality of patients admitted to ICU using demographic information (gender, age, marital status, ethnicity), first lab measurements during ICU stay, and first vital measurements during ICU stay. For example, you can use (1) logistic regression (`glm()` function in base R or keras), (2) logistic regression with lasso penalty (glmnet or keras package), (3) random forest (randomForest package), or (4) neural network (keras package).
-```{r}
-
-```
 
 
 ```{r}
-log_model = glm(thirty_day_mort ~ .,data = icu_cohort1, family = binomial(link = 'logit'))
-
-summary(log_model)
+library(caret)
 ```
-
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 
+```{r}
+library(caret)
+set.seed(2022)
+index <- createDataPartition(icu_cohort1 
+                             $thirtyday_mort, 
+                             p=0.8, list=FALSE)
+trainingset <- data[index]
+testingset <- data[-index]
+```
 2. Train the models using the training set.
+
+```{r}
+log_model = glm(thirtyday_mort ~ anchor_age 
+                + marital_status 
+                + creatinine
+                + potassium
+                + sodium
+                + chloride
+                + bicarbonate
+                + hematocrit
+                + white_blood_cell_count
+                + glucose
+                + magnesium
+                + Heart_rate
+                + Non_Invasive_Blood_Pressure_systolic
+                + Non_Invasive_Blood_Pressure_mean
+                + Temperature_Fahrenheit
+                + Respiratory_rate,
+                data =trainingset, family = binomial(link = 'logit'))
+
+summary(log_model)
+```
+```
 
 3. Compare model prediction performance on the test set.
 
