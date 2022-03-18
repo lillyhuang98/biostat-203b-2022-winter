@@ -220,7 +220,7 @@ icuglm <-
   cv.glmnet(model.matrix(
     thirtyday_mort ~ ., train),
     train$thirtyday_mort,
-  alpha = 1, family = "binomial", 
+    family = "binomial", 
   type.measure = "mse")
 icuglm
 ```
@@ -236,9 +236,5 @@ log2 <- ifelse(log1> 0.8, TRUE, FALSE)
 ```{r}
 Compare_models <-table(observed = test$thirtyday_mort, predicted = log2)
 Compare_models
-```
-```{r}
-log3 <- predict(icuglm, test, type = "response")
-log4 <- ifelse(log3> 0.8, TRUE, FALSE)
 ```
 
