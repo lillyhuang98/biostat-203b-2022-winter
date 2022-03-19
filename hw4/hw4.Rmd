@@ -150,18 +150,31 @@ Develop at least two analytic approaches for predicting the 30-day mortality of 
 ```{r}
 icudata <- completeData(micenew)
 icudata <- icudata[[2]]
+
 ```
 
 
 1. Partition data into 80% training set and 20% test set. Stratify partitioning according the 30-day mortality status.
 
-```{r}
-library(caret)
-set.seed(20220318)
-ICUindex <- createDataPartition(icudata$thirtyday_mort, p=0.8, list=FALSE)
-train <- data[ICUindex,]
-test <- data[-ICUindex,]
+```{r stratify partitioning}
+model <- split(icudata,icudata$thirtyday_mort)
+
+ICU <- lapply(model, function (d) {
+    indexes <- sample(1:nrow(d), size=0.8*nrow(d))
+})
+
+trainingset <- data[ ICU[[1]], ] 
+testingset <-  data[ -ICU[[1]], ]
 ```
+
+```{r}
+class(trainingset)
+class(testingset)
+class(icudata)
+class(data)
+
+```
+
 2. Train the models using the training set.
 **method1**
 
@@ -183,7 +196,7 @@ log_model1 = glm(as.factor(thirtyday_mort) ~ anchor_age
                 + Non_Invasive_Blood_Pressure_mean
                 + Temperature_Fahrenheit
                 + Respiratory_rate,
-                data =train, family = binomial(link = 'logit'))
+                data =trainingset, family = binomial(link = 'logit'))
 
 summary(log_model2)
 ```
@@ -207,7 +220,7 @@ log_model2 = glm(as.factor(thirtyday_mort) ~ anchor_age
                 + Non_Invasive_Blood_Pressure_mean
                 + Temperature_Fahrenheit
                 + Respiratory_rate,
-                data =test, family = binomial(link = 'logit'))
+                data =testingset, family = binomial(link = 'logit'))
 
 summary(log_model2)
 ```
