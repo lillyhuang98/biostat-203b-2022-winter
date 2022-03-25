@@ -255,10 +255,14 @@ icu_cohort <- icustays_tble %>%
            year(admittime) - anchor_year) %>%
   filter((age_hadm) > 18) %>%
   mutate(hadm_death = day(dod) -day(admittime)) %>%
-  mutate(thirty_day_mort = 
-           hadm_death <= 30) %>%
+  mutate("thirtyday_mort" = ifelse(hadm_death <= 30, "Yes", "No"))
+
+
 icu_cohort
 ```
+
+
+
 ```{r}
 saveRDS(as.data.frame(icu_cohort), file = "icu_cohort.rds")
 ```
